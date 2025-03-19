@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Chat;
 use App\Models\Wallet;
 use App\Services\CryptoPayment;
 use Illuminate\Http\Request;
@@ -140,5 +141,26 @@ class TenderController extends Controller
         if(!$tender->save()) return back()->with('error', 'Fehler beim Schließen der Ausschreibung.');
 
         return redirect("/tenders/my")->with('success', 'Ausschreibung erfolgreich geschlossen.');
+    }
+
+    public function chat(Request $request)
+    {
+        $validated = $request->validate([
+            'tender_id' => 'required|exists:App\Models\Tender,Tender_ID',
+            'message' => 'required|string'
+        ]);
+
+        $tender = Tender::find($validated["tender_id"]);
+        if($tender->Tenderer_ID != auth()->id() && $tender->Provider_ID != auth()->id()) return redirect()->back()->with('error', 'Nicht berechtigt.');
+
+        $chat = Chat::create([
+            'Tender_ID' => $validated["tender_id"],
+            'User_ID' => auth()->id(),
+            'Content' => $validated["message"],
+            'Timestamp' => date("Y-m-d H:i:s")
+        ]);
+        if(!$chat) return back()->with('error', 'Fehler beim Senden der Nachricht.');
+
+        return back()->with('success', 'Nachricht erfolgreich versendet.');
     }
 }

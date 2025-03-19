@@ -1,12 +1,12 @@
 {# templates/partials/sidebar.twig #}
 <div>
-    <form id="filter-form" action="#" method="get" autocomplete="off">
+    <form id="filter-form" action="/designs" method="get" autocomplete="off">
         <h4>Category</h4>
         <div class="list-group list-group-transparent mb-3" id="category-filter">
             {% if categories is not empty %}
                 {% for category in categories %}
                     <label class="form-check">
-                        <input class="form-check-input" type="radio" name="category" value="{{ category.Id }}">
+                        <input class="form-check-input" type="radio" name="category" value="{{ category.Category_ID }}">
                         <span class="form-check-label">{{ category.Name }}</span>
                     </label>
                 {% endfor %}
@@ -27,14 +27,6 @@
             {% else %}
                 <div class="text-secondary text-center">Keine Tags verfügbar</div>
             {% endif %}
-        </div>
-
-        <h4 class="mt-4">Preis</h4>
-        <div class="input-group">
-            <span class="input-group-text">BCY</span>
-            <input type="number" class="form-control" name="price_min" placeholder="min" min="0">
-            <span class="input-group-text">to</span>
-            <input type="number" class="form-control" name="price_max" placeholder="max" min="0">
         </div>
 
         <button type="submit" class="btn btn-primary w-100 mt-3">Filter anwenden</button>

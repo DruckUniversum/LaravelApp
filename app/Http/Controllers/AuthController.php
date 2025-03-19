@@ -62,7 +62,7 @@ class AuthController extends Controller
     public function register(Request $request): Application|Redirector|RedirectResponse
     {
         $validated = $request->validate([
-            'E-Mail' => 'required|email|unique:User',
+            'E-Mail' => 'required|email|unique:App\Models\User,Email',
             'password_usr' => 'required|same:password_confirm_usr',
             'Firstname' => 'required',
             'Lastname' => 'required',
@@ -70,6 +70,7 @@ class AuthController extends Controller
             'House' => 'required',
             'City' => 'required',
             'Postalcode' => 'required',
+            'Country' => 'required',
             'agb' => 'required',
             'Role' => 'required',
         ]);
@@ -83,6 +84,7 @@ class AuthController extends Controller
             'House_Number' => $validated['House'],
             'City' => $validated['City'],
             'Postal_Code' => $validated['Postalcode'],
+            'Country' => $validated['Country'],
             'AGB_Akzeptiert' => $validated['agb'],
             'Last_Login' => date("Y-m-d H:i:s"),
             "Failed_Logins" => 0

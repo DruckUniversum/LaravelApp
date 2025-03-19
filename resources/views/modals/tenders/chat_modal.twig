@@ -9,7 +9,7 @@
                 <div class="chat">
                     <div class="chat-bubbles">
                         <!-- Nachrichten aus der Backend-Variable $messages -->
-                        {% for message in tender.chat.messages %}
+                        {% for message in tender.chats %}
                             <div class="chat-item">
                                 <div class="row align-items-end {{ message.User_ID == auth.user.User_ID ? 'justify-content-end' : '' }}">
                                     <div class="col col-lg-6">
@@ -32,7 +32,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <form action="#" method="post" class="w-100">
+                <form action="/tenders/chat" method="post" class="w-100">
                     <div class="input-group">
                         <input type="hidden" name="tender_id" value="{{ tender.Tender_ID }}">
                         <input type="text" class="form-control" name="message" placeholder="Nachricht eingeben..." required>

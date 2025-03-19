@@ -41,8 +41,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('orders/tender', [TenderController::class, 'create']);
 
     // Benutzerprofil/Einstellungen bearbeiten
-    Route::get('user/settings', [UserController::class, 'index']);
-    Route::post('user/settings', [UserController::class, 'update']);
+    Route::get('settings', [UserController::class, 'settings']);
+    Route::post('settings/update', [UserController::class, 'settingsUpdate']);
 
     // Wallet-Routen
     Route::get('wallet', [WalletController::class, 'index']);
@@ -53,9 +53,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('tenders/create', [TenderController::class, 'create']);
     Route::post('tenders/accept', [TenderController::class, 'accept']);
     Route::post('tenders/ship', [TenderController::class, 'ship']);
-    Route::post('tenders/chat', [TenderController::class, 'chat'])->name('tenders.chat');
 
     Route::get('tenders/my', [TenderController::class, 'indexMy']);
-    Route::post('tenders/my/chat', [TenderController::class, 'chat'])->name('tenders.my.chat');
     Route::post('tenders/my/close', [TenderController::class, 'close']);
+
+    Route::post('tenders/chat', [TenderController::class, 'chat']);
 });

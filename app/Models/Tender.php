@@ -40,8 +40,8 @@ class Tender extends Model
         return $this->belongsTo(Order::class, 'Order_ID');
     }
 
-    public function chat(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function chats(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasOne(Chat::class, 'Tender_ID');
+        return $this->hasMany(Chat::class, 'Tender_ID');
     }
 }

@@ -8,7 +8,7 @@
     <div class="card">
         <div class="row g-0">
             <div class="col-12 d-flex flex-column">
-                <form method="POST" action="#">
+                <form method="POST" action="/settings/update">
                     <div class="card-body">
                         <h2 class="mb-4">Benutzerprofil</h2>
 
@@ -17,11 +17,11 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="form-label">Vorname</div>
-                                <input type="text" class="form-control" name="first_name" value="{{ user.firstName }}" required>
+                                <input type="text" class="form-control" name="first_name" value="{{ user.First_Name }}" required>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-label">Nachname</div>
-                                <input type="text" class="form-control" name="last_name" value="{{ user.lastName }}" required>
+                                <input type="text" class="form-control" name="last_name" value="{{ user.Last_Name }}" required>
                             </div>
                         </div>
 
@@ -34,11 +34,11 @@
                             </div>
                             <div class="col-md-2">
                                 <div class="form-label">Hausnummer</div>
-                                <input type="text" class="form-control" name="house_number" value="{{ user.houseNumber }}" required>
+                                <input type="text" class="form-control" name="house_number" value="{{ user.House_Number }}" required>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-label">Postleitzahl</div>
-                                <input type="text" class="form-control" name="postal_code" value="{{ user.postalCode }}" required>
+                                <input type="text" class="form-control" name="postal_code" value="{{ user.Postal_Code }}" required>
                             </div>
                         </div>
                         <div class="row g-3 mt-2">
@@ -67,7 +67,7 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="form-label">Neues Passwort</div>
-                                <input type="password" class="form-control" name="password_new">
+                                <input type="password" class="form-control" name="password">
                             </div>
                             <div class="col-md-6">
                                 <div class="form-label">Passwort bestätigen</div>

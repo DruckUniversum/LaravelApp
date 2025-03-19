@@ -8,9 +8,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
             </div>
             <div class="modal-body">
-                <form method="post" enctype="multipart/form-data">
-                    <input type="hidden" name="action" value="edit">
-                    <input type="hidden" name="design_id" value="{{ Design_ID.id }}">
+                <form method="post" action="/designs/manage/edit" enctype="multipart/form-data">
+                    <input type="hidden" name="design_id" value="{{ design.Design_ID }}">
                     <div class="mb-3">
                         <label for="fileUploadStl" class="form-label">3D-Modell hochladen (.stl)</label>
                         <input type="file" name="stl_file" id="fileUploadStl" class="form-control" accept="model/stl">

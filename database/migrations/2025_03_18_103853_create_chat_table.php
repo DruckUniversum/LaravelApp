@@ -11,8 +11,12 @@ return new class extends Migration
         Schema::create('Chat', function (Blueprint $table) {
             $table->id('Chat_ID');
             $table->unsignedBigInteger('Tender_ID')->nullable();
+            $table->unsignedBigInteger('User_ID')->nullable();
+            $table->text('Content')->nullable();
+            $table->timestamp('Timestamp')->nullable();
 
             $table->foreign('Tender_ID')->references('Tender_ID')->on('Tender')->onDelete('cascade');
+            $table->foreign('User_ID')->references('User_ID')->on('User')->onDelete('set null');
         });
     }
 
