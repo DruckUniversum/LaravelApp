@@ -1,0 +1,46 @@
+{% extends 'layouts/base.twig' %}
+
+{% block page_title %}
+    Krypto Wallet
+{% endblock %}
+
+{% block content %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Krypto-Wallet</h3>
+                <div class="card-actions">
+                    <!-- Add new (open modal for Auszahlung) -->
+                    <a href="#" class="btn btn-primary btn-3" data-bs-toggle="modal" data-bs-target="#withdrawModal">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-2">
+                            <path d="M12 5l0 14"></path>
+                            <path d="M5 12l14 0"></path>
+                        </svg>
+                        Auszahlung
+                    </a>
+                    <!-- Reload Button -->
+                    <a href="#" class="btn-action" onclick="window.location.reload();">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
+                            <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                            <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Wallet Details -->
+                <div class="mb-2">
+                    <strong>Adresse:</strong>
+                    <span id="wallet-address">{{ wallet.Address }}</span>
+                </div>
+                <div class="mb-2">
+                    <strong>Bestand:</strong>
+                    <span id="wallet-balance">{{ balance }} BCY</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'modals/wallet_withdraw_modal.twig' with {
+        'wallet': wallet
+    } %}
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+
+    <!-- Seitentitel -->
+    <h1 class="mt-4">Druckausschreibungen</h1>
+
+    <!-- Eigene Ausschreibungen -->
+    <h2 class="mt-4">Eigene Ausschreibungen</h2>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Titel</th>
+                <th>Preis</th>
+                <th>Status</th>
+                <th style="width: 30%">Aktionen</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for tender in tenders %}
+                <tr>
+                    <td>{{ tender.Tender_ID }}</td>
+                    <td>{{ tender.order.design.Name }}</td>
+                    <td>{{ tender.Bid }} BCY</td>
+                    <td>
+                            {% if tender.Status == 'OPEN' %}
+                                <span class="badge bg-primary" style="color: #FFFFFF;">Offen</span>
+                            {% elseif tender.Status == 'ACCEPTED' %}
+                                <span class="badge bg-success" style="color: #FFFFFF;">Akzeptiert</span>
+                            {% elseif tender.Status == 'PAID' %}
+                                <span class="badge bg-success" style="color: #FFFFFF;">Bezahlt</span>
+                            {% elseif tender.Status == 'PROCESSING' %}
+                                <span class="badge bg-warning" style="color: #FFFFFF;">In Bearbeitung</span>
+                            {% elseif tender.Status == 'SHIPPING' %}
+                                <span class="badge bg-primary" style="color: #FFFFFF;">In Versand</span>
+                            {% elseif tender.Status == 'CLOSED' %}
+                                <span class="badge bg-dark" style="color: #FFFFFF;">Erhalten</span>
+                            {% else %}
+                                <span class="badge bg-secondary" style="color: #FFFFFF;">{{ tender.Status }}</span>
+                            {% endif %}
+                    </td>
+                    <td>
+                        <div class="row">
+                            <div class="col-3">
+                                <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#tenderModal{{ tender.Tender_ID }}">
+                                    Details
+                                </button>
+                            </div>
+                            <div class="col-3">
+                                <!-- Neuer Button für Chat -->
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#chatModal{{ tender.Tender_ID }}">
+                                    Chat
+                                </button>
+                            </div>
+                            {% if tender.Status == 'SHIPPING' %}
+                                <div class="col-6">
+                                    <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#shippingModal{{ tender.Tender_ID }}">
+                                        Versandinformationen
+                                    </button>
+                                </div>
+                            {% endif %}
+                            <!-- Transaction-Details-Button -->
+                            {% if tender.Status == 'ACCEPTED' %}
+                                <div class="col-6">
+                                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#transactionModal{{ tender.Tender_ID }}">
+                                        Transaktionsdetails
+                                    </button>
+                                </div>
+
+                            <!-- Closed-Button -->
+                            {% elseif tender.Status == 'SHIPPING' %}
+                                <div class="col-3">
+                                    <form method="post" action="/tenders/my/close">
+                                        <input type="hidden" name="tender_id" value="{{ tender.Tender_ID }}">
+                                        <button type="submit" class="btn btn-dark">Erhalten</button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% include 'modals/tenders/chat_modal.twig' with {
+                    'tender': tender
+                } %}
+                {% include 'modals/tenders/info_modal.twig' with {
+                    'tender': tender
+                } %}
+                {% if tender.Status in ["PROCESSING", "SHIPPING"] %}
+                    {% include 'modals/tenders/shipping_modal.twig' with {
+                        'tender': tender
+                    } %}
+                {% endif %}
+                {% if tender.Status == "ACCEPTED" %}
+                    {% include 'modals/transaction_modal.twig' with {
+                        TransactionHash: tender.Transaction_Hash,
+                        PaidPrice: tender.Bid,
+                        PaymentStatus: tender.Status,
+                        Id: tender.Tender_ID
+                    } %}
+                {% endif %}
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">Keine eigenen Ausschreibungen gefunden.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}

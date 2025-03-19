@@ -1,0 +1,45 @@
+<div class="modal fade" id="chatModal{{ tender.Tender_ID }}" tabindex="-1" aria-labelledby="chatModalLabel{{ tender.Tender_ID }}">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="chatModalLabel{{ tender.Tender_ID }}">Chat: {{ tender.order.design.Name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="max-height: 600px; overflow: scroll">
+                <div class="chat">
+                    <div class="chat-bubbles">
+                        <!-- Nachrichten aus der Backend-Variable $messages -->
+                        {% for message in tender.chat.messages %}
+                            <div class="chat-item">
+                                <div class="row align-items-end {{ message.User_ID == auth.user.User_ID ? 'justify-content-end' : '' }}">
+                                    <div class="col col-lg-6">
+                                        <div class="chat-bubble {{ message.User_ID == userId ? 'chat-bubble-me' : '' }}">
+                                            <div class="chat-bubble-title">
+                                                <div class="row">
+                                                    <div class="col chat-bubble-author">{{ message.user.First_Name }} {{ message.user.Last_Name }}</div>
+                                                    <div class="col-auto chat-bubble-date">{{ message.Timestamp }}</div>
+                                                </div>
+                                            </div>
+                                            <div class="chat-bubble-body">
+                                                <p>{{ message.Content }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <form action="#" method="post" class="w-100">
+                    <div class="input-group">
+                        <input type="hidden" name="tender_id" value="{{ tender.Tender_ID }}">
+                        <input type="text" class="form-control" name="message" placeholder="Nachricht eingeben..." required>
+                        <button class="btn btn-primary" type="submit">Senden</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

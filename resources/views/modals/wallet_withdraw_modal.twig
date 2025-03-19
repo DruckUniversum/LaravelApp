@@ -1,0 +1,24 @@
+<div class="modal fade" id="withdrawModal" tabindex="-1" aria-labelledby="withdrawModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="withdrawModalLabel">Kryptowährung auszahlen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="#">
+                    <input type="hidden" name="wallet_address" value="{{ wallet.address }}">
+                    <div class="mb-3">
+                        <label for="withdrawAmount" class="form-label">Betrag</label>
+                        <input type="text" class="form-control" id="withdrawAmount" name="amount" placeholder="0 BCY" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="withdrawAddress" class="form-label">Empfängeradresse</label>
+                        <input type="text" class="form-control" id="withdrawAddress" name="address" placeholder="Wallet-Adresse eingeben" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Auszahlen</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

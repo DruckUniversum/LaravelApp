@@ -1,0 +1,194 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+    <h1 class="mt-4">Druck-Dashboard</h1>
+
+    <!-- Akzeptierte Ausschreibungen -->
+    <h2 class="mt-4">Akzeptierte Ausschreibungen</h2>
+    <div class="table-responsive mb-5">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Titel</th>
+                <th>Preis</th>
+                <th>Status</th>
+                <th style="width: 30%">Aktionen</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for tender in acceptedTenders %}
+                <tr>
+                    <td>{{ tender.Tender_ID }}</td>
+                    <td>{{ tender.order.design.Name }}</td>
+                    <td>{{ tender.Bid }} BCY</td>
+                    <td>
+                        {% if tender.Status == 'OPEN' %}
+                            <span class="badge bg-primary" style="color: #FFFFFF;">Offen</span>
+                        {% elseif tender.Status == 'ACCEPTED' %}
+                            <span class="badge bg-success" style="color: #FFFFFF;">Akzeptiert</span>
+                        {% elseif tender.Status == 'PAID' %}
+                            <span class="badge bg-success" style="color: #FFFFFF;">Bezahlt</span>
+                        {% elseif tender.Status == 'PROCESSING' %}
+                            <span class="badge bg-warning" style="color: #FFFFFF;">In Bearbeitung</span>
+                        {% elseif tender.Status == 'SHIPPING' %}
+                            <span class="badge bg-primary" style="color: #FFFFFF;">In Versand</span>
+                        {% elseif tender.Status == 'CLOSED' %}
+                            <span class="badge bg-dark" style="color: #FFFFFF;">Erhalten</span>
+                        {% else %}
+                            <span class="badge bg-secondary" style="color: #FFFFFF;">{{ tender.Status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="row">
+                            <div class="col-3">
+                                <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#tenderModal{{ tender.Tender_ID }}">
+                                    Details
+                                </button>
+                            </div>
+                            <div class="col-3">
+                                <!-- Neuer Button für Chat -->
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#chatModal{{ tender.Tender_ID }}">
+                                    Chat
+                                </button>
+                            </div>
+
+                            <div class="col-3">
+                                <!-- Claim-Button -->
+                                {% if tender.Status == 'OPEN' %}
+                                    <form method="post" action="#">
+                                        <input type="hidden" name="tender_id" value="{{ tender.Tender_ID }}">
+                                        <input type="hidden" name="action" value="ACCEPTED">
+                                        <button type="submit" class="btn btn-primary">Akzeptieren</button>
+                                    </form>
+
+                                <!-- Processing-Button abhängig von Status und Kontext -->
+                                {% elseif tender.Status == 'PAID' %}
+                                    <!-- Datei-Download-Link -->
+                                    <a href="/download?tender_id={{ tender.Tender_ID }}"
+                                       class="btn btn-primary"
+                                       onclick="setTimeout(function() { window.location.reload(); }, 500);">
+                                        Datei herunterladen
+                                    </a>
+
+                                <!-- Shipping-Button -->
+                                {% elseif tender.Status == 'PROCESSING' %}
+                                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#shippingModal{{ tender.Tender_ID }}">
+                                        Versenden
+                                    </button>
+                                {% elseif tender.Status == 'SHIPPING' %}
+                                    <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#shippingModal{{ tender.Tender_ID }}">
+                                        Versandinformationen
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% include 'modals/tenders/info_modal.twig' with {
+                    'tender': tender
+                } %}
+                {% include 'modals/tenders/chat_modal.twig' with {
+                    'tender': tender
+                } %}
+                {% if tender.Status in ["PROCESSING", "SHIPPING"] %}
+                    {% include 'modals/tenders/shipping_modal.twig' with {
+                        'tender': tender
+                    } %}
+                {% endif %}
+            {% endfor %}
+            {% if ownedTenders|length == 0 %}
+                <tr>
+                    <td colspan="5" class="text-center">Keine eigenen Ausschreibungen gefunden.</td>
+                </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Öffentliche Ausschreibungen -->
+    <h2>Öffentliche Ausschreibungen</h2>
+
+    <!-- Filterformular für Min- und Max-Preis -->
+    <form method="get" class="mb-4">
+        <div class="row g-3">
+            <div class="col-md-5">
+                <input type="number" class="form-control" name="price_min" placeholder="Minimaler Preis" value="{{ min_price|default('') }}" step="0.01" min="0">
+            </div>
+            <div class="col-md-5">
+                <input type="number" class="form-control" name="price_max" placeholder="Maximaler Preis" value="{{ max_price|default('') }}" step="0.01" min="0">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Filtern</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Titel</th>
+                <th>Preis</th>
+                <th>Status</th>
+                <th style="width: 30%">Aktionen</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for tender in publicTenders %}
+                <tr>
+                    <td>{{ tender.Tender_ID }}</td>
+                    <td>{{ tender.order.design.Name }}</td>
+                    <td>{{ tender.Bid }}</td>
+                    <td>
+                        {% if tender.Status == 'OPEN' %}
+                            <span class="badge bg-primary" style="color: #FFFFFF;">Offen</span>
+                        {% elseif tender.Status == 'ACCEPTED' %}
+                            <span class="badge bg-success" style="color: #FFFFFF;">Akzeptiert</span>
+                        {% elseif tender.Status == 'PAID' %}
+                            <span class="badge bg-success" style="color: #FFFFFF;">Bezahlt</span>
+                        {% elseif tender.Status == 'PROCESSING' %}
+                            <span class="badge bg-warning" style="color: #FFFFFF;">In Bearbeitung</span>
+                        {% elseif tender.Status == 'SHIPPING' %}
+                            <span class="badge bg-primary" style="color: #FFFFFF;">In Versand</span>
+                        {% elseif tender.Status == 'CLOSED' %}
+                            <span class="badge bg-dark" style="color: #FFFFFF;">Erhalten</span>
+                        {% else %}
+                            <span class="badge bg-secondary" style="color: #FFFFFF;">{{ tender.Status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="row">
+                            <div class="col-3">
+                                <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#tenderModal{{ tender.Tender_ID }}">
+                                    Details
+                                </button>
+                            </div>
+                            <div class="col-3">
+                                <!-- Claim-Button -->
+                                {% if tender.Status == 'OPEN' %}
+                                    <form method="post" action="/tenders/accept">
+                                        <input type="hidden" name="tender_id" value="{{ tender.Tender_ID }}">
+                                        <input type="hidden" name="action" value="ACCEPTED">
+                                        <button type="submit" class="btn btn-primary">Akzeptieren</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% include 'modals/tenders/info_modal.twig' with {
+                    'tender': tender
+                } %}
+            {% endfor %}
+            {% if publicTenders|length == 0 %}
+                <tr>
+                    <td colspan="5" class="text-center">Keine öffentlichen Ausschreibungen gefunden.</td>
+                </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}

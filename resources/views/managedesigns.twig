@@ -1,0 +1,77 @@
+{% extends 'layouts/base.twig' %}
+
+{% block title %}Designs verwalten{% endblock %}
+{% block page_title %}Designs verwalten{% endblock %}
+
+{% block content %}
+
+    <!-- Hochladen Button oben rechts -->
+    <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+            Design erstellen
+        </button>
+    </div>
+    <div class="row row-cards" id="uploaded-design-grid">
+        {% for design in designs %}
+            <div class="col-sm-6 col-lg-4">
+                <div class="card card-sm">
+                    <!-- Bild oben -->
+                    <a href="#" class="d-block">
+                        <img src="{{ asset('storage/cover_picture/' ~ design.Cover_Picture_File ~ '.png') }}" class="card-img-top">
+                    </a>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <span class="avatar avatar-2 me-3 rounded">{{ design.Designer_ID }}</span>
+                            <div>
+                                <div class="card-title">{{ design.Name }}</div>
+                                <div class="text-secondary"><strong>Preis:</strong> {{ design.Price }} BCY</div>
+                            </div>
+                        </div>
+                        <!-- Details Button -->
+                        <button class="btn btn-info w-100 mt-3" data-bs-toggle="modal" data-bs-target="#designModal{{ design.Design_ID }}">
+                            Bearbeiten
+                        </button>
+                        <form method="post" action="/designs/manage/delete">
+                            <input type="hidden" name="design_id" value="{{ design.Design_ID }}">
+                            <button type="submit" class="btn btn-danger w-100 mt-2">Entfernen</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% include 'modals/manage-designs/edit_modal.twig' with { 'design': design, 'categories': categories } %}
+        {% endfor %}
+        {% include 'modals/manage-designs/add_modal.twig' with { 'tags': tags, 'categories': categories } %}
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const selectCategories = document.querySelectorAll(".select-category");
+
+            // Füge Event Listeners zu allen .select-category <select>-Elementen hinzu
+            selectCategories.forEach((selectCategory) => {
+                // Verberge das zugehörige Eingabefeld initial
+                const relatedContainer = selectCategory.closest(".modal-body").querySelector(".add-new-category");
+
+                if (relatedContainer) {
+                    relatedContainer.style.display = "none";
+                }
+
+                selectCategory.addEventListener("change", (event) => {
+                    if (event.target.value === "new") {
+                        // Zeige das Eingabefeld an, wenn "Neue Kategorie anlegen" ausgewählt wird
+                        if (relatedContainer) {
+                            relatedContainer.style.display = "block";
+                        }
+                    } else {
+                        // Verstecke das Eingabefeld, wenn eine andere Kategorie ausgewählt wird
+                        if (relatedContainer) {
+                            relatedContainer.style.display = "none";
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+
+
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'layouts/base.twig' %}
+
+{% block page_title %}
+    Einstellungen
+{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="row g-0">
+            <div class="col-12 d-flex flex-column">
+                <form method="POST" action="#">
+                    <div class="card-body">
+                        <h2 class="mb-4">Benutzerprofil</h2>
+
+                        <!-- Persönliche Informationen -->
+                        <h3 class="card-title">Persönliche Informationen</h3>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-label">Vorname</div>
+                                <input type="text" class="form-control" name="first_name" value="{{ user.firstName }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-label">Nachname</div>
+                                <input type="text" class="form-control" name="last_name" value="{{ user.lastName }}" required>
+                            </div>
+                        </div>
+
+                        <!-- Adresse -->
+                        <h3 class="card-title mt-4">Adresse</h3>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-label">Straße</div>
+                                <input type="text" class="form-control" name="street" value="{{ user.Street }}" required>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-label">Hausnummer</div>
+                                <input type="text" class="form-control" name="house_number" value="{{ user.houseNumber }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-label">Postleitzahl</div>
+                                <input type="text" class="form-control" name="postal_code" value="{{ user.postalCode }}" required>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <div class="form-label">Stadt</div>
+                                <input type="text" class="form-control" name="city" value="{{ user.City }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-label">Land</div>
+                                <input type="text" class="form-control" name="country" value="{{ user.Country }}" required>
+                            </div>
+                        </div>
+
+                        <!-- Kontakt -->
+                        <h3 class="card-title mt-4">Kontakt</h3>
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <div class="form-label">E-Mail</div>
+                                <input type="email" class="form-control" name="email" value="{{ user.Email }}" required>
+                            </div>
+                        </div>
+
+                        <!-- Passwort -->
+                        <h3 class="card-title mt-4">Passwort ändern</h3>
+                        <p class="card-subtitle">Falls du das Passwort ändern möchtest, gib ein neues ein:</p>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-label">Neues Passwort</div>
+                                <input type="password" class="form-control" name="password_new">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-label">Passwort bestätigen</div>
+                                <input type="password" class="form-control" name="password_confirm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-transparent mt-auto">
+                        <div class="btn-list justify-content-end">
+                            <button type="submit" class="btn btn-primary btn-2">Speichern</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,77 @@
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadModalLabel">Neues Design erstellen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="/designs/manage/create" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="fileUpload" class="form-label">3D-Modell hochladen (.stl)</label>
+                        <input type="file" name="stl_file" id="fileUpload" class="form-control" accept="model/stl" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="designName" class="form-label">Name des Designs</label>
+                        <input type="text" name="name" id="designName" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kategorie</label>
+                        <select type="text" name="category" class="select-category form-select tomselected ts-hidden-accessible" tabindex="-1">
+                            <option value="" selected disabled>Bitte Kategorie auswählen</option>
+                            {% for category in categories %}
+                                <option value="{{ category.Category_ID }}">{{ category.Name }}</option>
+                            {% endfor %}
+                            <option value="new">Neue Kategorie anlegen</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3 add-new-category" style="display: none">
+                        <label for="newCategory" class="form-label">Neue Kategorie</label>
+                        <input type="text" name="new_category" id="newCategory" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Preis (BCY)</label>
+                        <input type="number" name="price" id="price" class="form-control" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Beschreibung</label>
+                        <textarea name="description" id="description" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fileUpload" class="form-label">Cover-Bild hochladen (.png)</label>
+                        <input type="file" name="cover_picture" id="fileUpload" class="form-control" accept="image/png" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Lizenz</label>
+                        <input type="text" name="license" id="tags" class="form-control" required>
+                    </div>
+                    {% if tags|length > 0 %}
+                        <div class="mb-3">
+                            <label for="tags" class="form-label">Tags</label>
+                            <div>
+                                {% for tag in tags %}
+                                    <label class="form-check form-check-inline">
+                                        <input class="form-check-input" type="hidden" name="tag_{{ tag.id }}" value=0>
+                                        <input class="form-check-input" type="checkbox" name="tag_{{ tag.id }}" value=1>
+                                        <span class="form-check-label">{{ tag.name }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="new_tags" class="form-label">Neue Tags hinzufügen (mit Komma getrennt, z.B.: Tag1, Tag2)</label>
+                        <input type="text" name="new_tags" id="new_tags" class="form-control">
+                    </div>
+                    <!-- Designer-ID kommt automatisch aus dem Account (nicht im Formular enthalten) -->
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">Hochladen</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

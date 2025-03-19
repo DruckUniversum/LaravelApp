@@ -1,0 +1,18 @@
+ <div class="modal fade" id="transactionModal{{ Id }}" tabindex="-1" aria-labelledby="transactionModalLabel{{ Id }}">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transactionModalLabel{{ Id }}">Transaktionsdetails</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Transaktions-Hash:</strong> {{ TransactionHash }}</p>
+                <p><strong>Payment Status:</strong> {{ PaymentStatus }}</p>
+                <p><strong>Betrag:</strong> {{ PaidPrice }} BCY</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+            </div>
+        </div>
+    </div>
+</div>

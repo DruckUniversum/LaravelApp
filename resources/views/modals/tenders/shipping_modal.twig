@@ -1,0 +1,55 @@
+<div class="modal fade" id="shippingModal{{ tender.Tender_ID }}" tabindex="-1" aria-labelledby="shippingModalLabel{{ tender.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="/tenders/ship">
+                <input type="hidden" name="tender_id" value="{{ tender.Tender_ID }}">
+                <input type="hidden" name="action" value="SHIPPING">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shippingModalLabel{{ tender.Tender_ID }}">
+                        Versandinformationen - Ausschreibung ID {{ tender.Tender_ID }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Versandadresse</label>
+                        {{ tender.tenderer.First_Name }} {{ tender.tenderer.Last_Name }}<br>
+                        {{ tender.tenderer.Street }} {{ tender.tenderer.Houst_Number }}<br>
+                        {{ tender.tenderer.Postal_Code }} {{ tender.tenderer.City }}<br>
+                        {{ tender.tenderer.Country }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="shippingProvider{{ tender.Tender_ID }}" class="form-label">Versanddienstleister</label>
+                        <input type="text" name="shipping_provider" class="form-control" id="shippingProvider{{ tender.Tender_ID }}"
+                                {% if tender.Status == 'SHIPPING' %}
+                                    value="{{ tender.Shipping_Provider }}"
+                                {% endif %}
+                               required
+                        >
+                    </div>
+                    <div class="mb-3">
+                        <label for="shippingNumber{{ tender.Tender_ID }}" class="form-label">Sendungsnummer</label>
+                        <input type="text" name="shipping_number" class="form-control" id="shippingNumber{{ tender.Tender_ID }}"
+                                {% if tender.Status == 'SHIPPING' %}
+                                    value="{{ tender.Shipping_Number }}"
+                                {% endif %}
+                               required
+                        >
+                    </div>
+                    <input type="hidden" name="tender_id" value="{{ tender.Tender_ID }}">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+                    <button type="submit" class="btn btn-primary">
+                        {% if tender.Status == 'PROCESSING' %}
+                            Versenden
+                        {% elseif tender.Status == 'SHIPPING' %}
+                            Speichern
+                        {% endif %}
+                    </button>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

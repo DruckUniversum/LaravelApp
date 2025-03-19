@@ -1,0 +1,68 @@
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset("css/register_styles.css") }}">
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h2>Registrierung</h2>
+
+        {% if errors is defined and errors|length > 0 %}
+            <div class="error-messages">
+                <ul>
+                    {% for error in errors %}
+                        <li style="color: red;">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form action="/auth/register" method="POST">
+            <label for="Lastname">Lastname:</label>
+            <input type="text" id="Lastname" name="Lastname" required>
+
+            <label for="Firstname">Firstname:</label>
+            <input type="text" id="Firstname" name="Firstname" required>
+
+            <label for="E-MAil">E-Mail:</label>
+            <input type="text" id="E-Mail" name="E-Mail" required>
+
+            <label for="Street">Street:</label>
+            <input type="text" id="Street" name="Street" required>
+
+            <label for="House">House:</label>
+            <input type="text" id="House" name="House" required>
+
+            <label for="City">City:</label>
+            <input type="text" id="City" name="City" required>
+
+            <label for="Postalcode">Postalcode:</label>
+            <input type="text" id="Postalcode" name="Postalcode" required>
+
+            <label for="Country">Country:</label>
+            <input type="text" id="Country" name="Country" required>
+
+            <label for="password_usr">Passwort:</label>
+            <input type="password" id="password_usr" name="password_usr" required>
+
+            <label for="password_confirm_usr">Passwort bestätigen:</label>
+            <input type="password" id="password_confirm_usr" name="password_confirm_usr" required>
+
+            <label for="Role">Rolle auswählen:</label>
+            <select id="Role" name="Role[]" size="3" multiple required>
+                <option value="User">User</option>
+                <option value="Designer">Designer</option>
+                <option value="Provider">Provider</option>
+            </select>
+
+
+
+            <label>
+                <input type="checkbox" name="agb" required> AGB akzeptieren
+            </label>
+
+            <button type="submit">Registrieren</button>
+            <a href = "/auth/login">Zum Login</a>
+        </form>
+    </div>
+{% endblock %}
+

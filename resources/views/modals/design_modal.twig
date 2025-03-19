@@ -1,0 +1,29 @@
+{# templates/modals/design_modal.twig #}
+<div class="modal fade" id="designModal{{ design.Design_ID }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bestellung für {{ design.Name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h4>Details</h4>
+                <p>Kategorie: {{ design.category.Name }}</p>
+                <p>Preis: {{ design.Price }} BCY</p>
+                <p>Designer: {{ design.designer.First_Name }} {{ design.designer.Last_Name }}</p>
+                <p>Beschreibung: {{ design.Description }}</p>
+                <p>Tags:
+                    {% for tag in design.tags %}
+                        <span class="badge bg-primary" style="color: #FFFFFF;">{{ tag.Name }}</span>
+                    {% endfor %}
+                </p>
+            </div>
+            <form method="post" action="/orders/create">
+                <input type="hidden" name="design_id" value="{{ design.Design_ID }}">
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary w-100">Bestellung aufgeben</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

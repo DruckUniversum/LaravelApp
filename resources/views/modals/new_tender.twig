@@ -1,0 +1,52 @@
+<div class="modal fade" id="tenderModal{{ order.Order_ID }}" tabindex="-1" aria-labelledby="tenderModalLabel{{ order.Order_ID }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tenderModalLabel{{ order.Order_ID }}">Druckausschreibung erstellen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="/tenders/create">
+                <input type="hidden" name="order_id" value="{{ order.Order_ID }}">
+                <div class="modal-body">
+                    <!-- Preis -->
+                    <div class="mb-3">
+                        <label for="price{{ order.Order_ID }}" class="form-label">Preis (BCY)</label>
+                        <input type="number" class="form-control" id="price{{ order.Order_ID }}" name="bid" placeholder="z. B. 50,00" step="0.01" required>
+                    </div>
+
+                    <!-- Filament -->
+                    <div class="mb-3">
+                        <label for="filament{{ order.Order_ID }}" class="form-label">Filament</label>
+                        <select class="form-select" id="filament{{ order.Order_ID }}" name="filament" required>
+                            <option value="" disabled selected>Wähle das Filament...</option>
+                            <option value="PLA">PLA</option>
+                            <option value="ABS">ABS</option>
+                            <option value="Carbon">Carbon</option>
+                        </select>
+                    </div>
+
+                    <!-- Fülldichte -->
+                    <div class="mb-3">
+                        <label for="infill{{ order.Order_ID }}" class="form-label">Fülldichte (%)</label>
+                        <select class="form-select" id="infill{{ order.Order_ID }}" name="infill" required>
+                            <option value="" disabled selected>Wähle die Fülldichte...</option>
+                            {% for i in range(5, 100, 5) %}
+                                <option value="{{ i }}">{{ i }}%</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Beschreibung -->
+                    <div class="mb-3">
+                        <label for="description{{ order.Order_ID }}" class="form-label">Beschreibung</label>
+                        <textarea class="form-control" id="description{{ order.Order_ID }}" name="description" placeholder="Details zur Druckanforderung..." rows="5" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+                    <button type="submit" class="btn btn-success">Druckausschreibung erstellen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

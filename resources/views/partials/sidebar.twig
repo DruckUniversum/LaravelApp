@@ -1,0 +1,97 @@
+{# templates/partials/sidebar.twig #}
+<div>
+    <form id="filter-form" action="#" method="get" autocomplete="off">
+        <h4>Category</h4>
+        <div class="list-group list-group-transparent mb-3" id="category-filter">
+            {% if categories is not empty %}
+                {% for category in categories %}
+                    <label class="form-check">
+                        <input class="form-check-input" type="radio" name="category" value="{{ category.Id }}">
+                        <span class="form-check-label">{{ category.Name }}</span>
+                    </label>
+                {% endfor %}
+            {% else %}
+                <div class="list-group-item text-secondary text-center">Keine Kategorien verfügbar</div>
+            {% endif %}
+        </div>
+
+        <h4 class="mt-4">Tags</h4>
+        <div class="mb-3">
+            {% if tags is not empty %}
+                {% for tag in tags %}
+                    <label class="form-check">
+                        <input type="checkbox" class="form-check-input filter-tag" name="tags[]" value="{{ tag.Tag_ID }}">
+                        <span class="form-check-label">{{ tag.Name }}</span>
+                    </label>
+                {% endfor %}
+            {% else %}
+                <div class="text-secondary text-center">Keine Tags verfügbar</div>
+            {% endif %}
+        </div>
+
+        <h4 class="mt-4">Preis</h4>
+        <div class="input-group">
+            <span class="input-group-text">BCY</span>
+            <input type="number" class="form-control" name="price_min" placeholder="min" min="0">
+            <span class="input-group-text">to</span>
+            <input type="number" class="form-control" name="price_max" placeholder="max" min="0">
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-3">Filter anwenden</button>
+        <button type="button" id="reset-filters" class="btn btn-secondary w-100 mt-2">Filter zurücksetzen</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const categoryItems = document.querySelectorAll(".category-item");
+        let selectedCategory = null;
+        const filterForm = document.getElementById("filter-form");
+        const resetButton = document.getElementById("reset-filters");
+
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+
+        urlParams.keys().forEach(key => {
+           switch(key) {
+               case "price_max":
+                   document.getElementsByName("price_max")[0].value = parseFloat(urlParams.get("price_max"));
+                   break;
+               case "price_min":
+                   document.getElementsByName("price_min")[0].value = parseFloat(urlParams.get("price_min"));
+                   break;
+               case "category":
+                   document.getElementsByName("category").forEach(cat => {
+                       if(parseInt(cat.value) === parseInt(urlParams.get("category"))) {
+                           cat.checked = true;
+                       }
+                   })
+                   break;
+               case "tags[]":
+                   urlParams.getAll("tags[]").forEach(tag => {
+                       document.getElementsByName("tags[]").forEach(tagEl => {
+                           if(tagEl.value === tag) {
+                               tagEl.checked = true;
+                           }
+                       })
+                   });
+                   break;
+           }
+        });
+
+        resetButton.addEventListener("click", function () {
+
+            // Visuelles Feedback für Kategorien entfernen
+            if (selectedCategory) {
+                selectedCategory.classList.remove("active", "bg-primary", "text-white");
+                selectedCategory = null;
+            }
+
+            // URL-Parameter entfernen und Seite neu laden
+            const url = new URL(window.location.href);
+            url.search = "";
+            window.location.href = url.toString();
+
+        });
+    });
+</script>

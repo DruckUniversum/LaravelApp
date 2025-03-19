@@ -1,0 +1,70 @@
+{# templates/layouts/base.twig #}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Druck Universum{% endblock %}</title>
+
+    <!-- Tabler UI Styles -->
+    <link href="{{ asset('css/tabler.min.css') }}" rel="stylesheet">
+</head>
+<body>
+<!-- Navigation -->
+{% include 'partials/navbar.twig' %}
+
+<div class="page-wrapper">
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <h2 class="page-title">{% block page_title %}{% endblock %}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="row g-4">
+
+                <!-- Erfolgsmeldung -->
+                {% if success %}
+                    <div class="alert alert-important alert-success alert-dismissible" role="alert">
+                        <div>
+                            <h4 class="alert-heading mt-3">{{ success }}</h4>
+                        </div>
+                        <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+                    </div>
+                {% endif %}
+                {% if error %}
+                    <div class="alert alert-important alert-danger alert-dismissible" role="alert">
+                        <div>
+                            <h4 class="alert-heading mt-3">{{ error }}</h4>
+                        </div>
+                        <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+                    </div>
+                {% endif %}
+
+                <!-- Sidebar -->
+                {% if showSidebar is defined and showSidebar %}
+                    <div class="col-md-3">
+                        {% include 'partials/sidebar.twig' %}
+                    </div>
+                {% endif %}
+                <!-- Hauptinhalt -->
+
+                <div class="{% if showSidebar is defined and showSidebar %}col-md-9{% else %}col-md-12{% endif %}">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+{% include 'partials/footer.twig' %}
+
+<!-- Tabler UI JS -->
+<script src="{{ asset('js/tabler.min.js') }}"></script>
+</body>
+</html>

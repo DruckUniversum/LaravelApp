@@ -1,0 +1,38 @@
+{# templates/partials/navbar.twig #}
+<header class="navbar navbar-expand-md d-print-none">
+    <div class="container-xl">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-brand navbar-brand-autodark pe-0 pe-md-3">
+            <img width="32px" height="32px" src="{{ asset("img/logo.png") }}">
+            Druck Universum
+        </div>
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href="/designs">Designs</a></li>
+            {% if auth.isAuthenticated %}
+            <li class="nav-item"><a class="nav-link" href="/orders">Bestellungen</a></li>
+            <li class="nav-item"><a class="nav-link" href="/tenders/my">Druckausschreibungen</a></li>
+                <li class="nav-item"><a class="nav-link" href="/wallet">Wallet</a></li>
+                <li class="nav-item"><a class="nav-link" href="/settings">Einstellungen</a></li>
+            {% endif %}
+            <li class="nav-item"><a class="nav-link" href="/tenders">Druck-Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="/designs/manage">Designs verwalten</a></li>
+            {% if "Provider" in roles %}
+            <li class="nav-item"><a class="nav-link" href="/tenders">Druck-Dashboard</a></li>
+            {% endif %}
+            {% if "Designer" in roles %}
+            <li class="nav-item"><a class="nav-link" href="/designs/manage">Designs verwalten</a></li>
+            {% endif %}
+        </ul>
+        <div class="navbar-nav ms-auto d-flex align-items-center">
+            {% if not auth.isAuthenticated %}
+                <a href="/auth/login" class="btn btn-outline-primary me-2">Login</a>
+                <a href="/auth/register" class="btn btn-outline-primary me-2">Register</a>
+            {% endif %}
+            {% if auth.isAuthenticated %}
+                <span class="text-black me-3"><b>{{ auth.user.Email }}</b></span>
+                <a href="/auth/logout" class="btn btn-outline-primary">Logout</a>
+            {% endif %}
+        </div>
+</header>

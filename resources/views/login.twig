@@ -1,0 +1,31 @@
+{% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset("css/register_styles.css") }}">
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h2>Login</h2>
+
+        {% if errors is defined and errors|length > 0 %}
+            <div class="error-messages">
+                <ul>
+                    {% for error in errors %}
+                        <li style="color: red;">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form action="#" method="POST">
+
+            <label for="E-MAil">E-Mail:</label>
+            <input type="text" id="E-Mail" name="E-Mail" required>
+
+            <label for="password_usr">Passwort:</label>
+            <input type="password" id="password_usr" name="password_usr" required>
+
+            <button type="submit">Login</button>
+            <a href = "/auth/register">Zum Registrieren</a>
+        </form>
+    </div>
+{% endblock %}

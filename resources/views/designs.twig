@@ -1,0 +1,38 @@
+{# templates/pages/designs.twig #}
+{% extends './layouts/base.twig' %}
+
+{% set showSidebar = true %} {# Sidebar für Designs anzeigen #}
+
+{% block title %}Designs{% endblock %}
+{% block page_title %}Designs{% endblock %}
+
+{% block content %}
+
+    <!-- Design-Karten -->
+    <div class="row row-cards" id="design-grid">
+        {% for design in designs %}
+            <div class="col-sm-6 col-lg-4">
+                <div class="card card-sm">
+                    <a href="#" class="d-block"><img src="{{ asset('storage/cover_picture/' ~ design.Cover_Picture_File ~ '.png') }}" class="card-img-top"></a>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <span class="avatar avatar-2 me-3 rounded">{{ design.designer.First_Name|first|upper }}{{ design.designer.Last_Name|first|upper }}</span>
+                            <div>
+                                <div>{{ design.Name }}</div>
+                                <div class="text-secondary">Kategorie: {{ design.Category.Name }}</div>
+                                <div class="text-secondary">Preis: {{ design.Price }} BCY</div>
+                                <div class="text-secondary">Tags:
+                                    {% for tag in design.tags %}
+                                        <span class="badge bg-primary" style="color: #FFFFFF;">{{ tag.Name }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#designModal{{ design.Design_ID }}">Bestellen</button>
+                    </div>
+                </div>
+            </div>
+            {{ include('modals/design_modal.twig', {design: design}) }}
+        {% endfor %}
+    </div>
+{% endblock %}

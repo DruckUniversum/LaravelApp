@@ -1,0 +1,47 @@
+{# templates/modals/tender_modal.html.twig #}
+<div class="modal fade" id="tenderModal{{ tender.Tender_ID }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ausschreibungsdetails: {{ tender.order.design.Name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Vorschaubild -->
+                <a href="#" class="d-block text-center mb-3">
+                    <img src="{{ asset('storage/cover_picture/' ~ tender.order.design.Cover_Picture_File ~ '.png') }}" alt="{{ tender.order.design.Name }}" class="card-img-top img-thumbnail" style="max-width: 200px;">
+                </a>
+
+                <!-- Ausschreibungsdetails -->
+                <p><strong>Titel:</strong> {{ tender.order.design.Name }}</p>
+                <p><strong>Preis:</strong> {{ tender.Bid }} BCY</p>
+                <p><strong>Filament:</strong> {{ tender.Filament }}</p>
+                <p><strong>Fülldichte (Infill):</strong> {{ tender.Infill }}%</p>
+                <p><strong>Beschreibung:</strong> {{ tender.Description }}</p>
+                <p><strong>Erstellt am:</strong> {{ tender.Tender_Date|date("d.m.Y H:i") }}</p>
+                <p><strong>Status:</strong>
+                    {% if tender.Status == 'OPEN' %}
+                        <span class="badge bg-primary" style="color: #FFFFFF;">Offen</span>
+                    {% elseif tender.Status == 'ACCEPTED' %}
+                        <span class="badge bg-success" style="color: #FFFFFF;">Akzeptiert</span>
+                    {% elseif tender.Status == 'PAID' %}
+                        <span class="badge bg-success" style="color: #FFFFFF;">Bezahlt</span>
+                    {% elseif tender.Status == 'PROCESSING' %}
+                        <span class="badge bg-warning" style="color: #FFFFFF;">In Bearbeitung</span>
+                    {% elseif tender.Status == 'SHIPPING' %}
+                        <span class="badge bg-primary" style="color: #FFFFFF;">In Versand</span>
+                    {% elseif tender.Status == 'CLOSED' %}
+                        <span class="badge bg-dark" style="color: #FFFFFF;">Erhalten</span>
+                    {% else %}
+                        <span class="badge bg-secondary" style="color: #FFFFFF;">{{ tender.Status }}</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <!-- Schließen-Button -->
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+            </div>
+        </div>
+    </div>
+</div>
+
