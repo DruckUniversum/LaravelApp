@@ -102,7 +102,19 @@ return [
             'with' => [
                 'stream' => 'php://stderr',
             ],
-            'processors' => [PsrLogMessageProcessor::class],
+            'processors' => [PsrLogMes5sageProcessor::class],
+        ],
+
+        'graylog' => [
+            'driver' => 'monolog',
+            'handler' => Monolog\Handler\GelfHandler::class,
+            'handler_with' => [
+                'publisher' => [
+                    'hostname' => env('GRAYLOG_HOST', 'localhost'),
+                    'port' => env('GRAYLOG_PORT', 12201),
+                ],
+            ],
+            'formatter' => Monolog\Formatter\GelfMessageFormatter::class,
         ],
 
         'syslog' => [
