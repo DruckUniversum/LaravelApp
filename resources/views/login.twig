@@ -6,12 +6,11 @@
     <div class="container">
         <h2>Login</h2>
 
-        {% if errors is defined and errors|length > 0 %}
+        <!-- Fehlermeldung -->
+        {% if error %}
             <div class="error-messages">
                 <ul>
-                    {% for error in errors %}
-                        <li style="color: red;">{{ error }}</li>
-                    {% endfor %}
+                    <li style="color: red;">{{ error }}</li>
                 </ul>
             </div>
         {% endif %}

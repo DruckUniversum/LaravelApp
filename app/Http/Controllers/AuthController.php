@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\Factory;
 use Illuminate\View\View;
+use function Laravel\Prompts\error;
 
 class AuthController extends Controller
 {
@@ -62,8 +63,8 @@ class AuthController extends Controller
         }
 
         Log::warning('Fehlgeschlagener Login-Versuch.', ['email' => $credentials['E-Mail']]);
-        return back()->withErrors([
-            'email' => 'Die bereitgestellten Anmeldedaten stimmen nicht überein.',
+        return back()->with([
+            'error' => 'Die bereitgestellten Anmeldedaten stimmen nicht überein.',
         ]);
     }
 
@@ -107,6 +108,10 @@ class AuthController extends Controller
 
         // Wallet für den neuen Benutzer erstellen
         $wallet = $this->cryptoPayment::generate_wallet(env('BLOCKCYPHER_API_KEY'));
+        if (empty($wallet) || !isset($wallet['private'], $wallet['public'], $wallet['address'])) {
+            Log::error('Fehler beim Erstellen des Wallets.', ['user_id' => $user->id]);
+        }
+
         $coinSymbol = 'bcy';
         $address = $wallet['address'];
 
