@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Dieses Model repräsentiert einen Tag für Designs in der Anwendung.
+ * Ein Tag ist in einer n:m-Beziehung zu Designs eingebunden, d.h. ein Tag kann mehreren Designs zugeordnet sein.
+ */
 class Tender extends Model
 {
     protected $table = 'Tender';

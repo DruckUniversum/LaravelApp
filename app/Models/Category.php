@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Dieses Model repräsentiert eine Kategorie für Designs in der Anwendung.
+ * Eine Kategorie hat eine 1:n-Beziehung zu Designs, d.h. einer Kategorie können mehrere Designs zugeordnet werden.
+ */
 class Category extends Model
 {
     protected $table = 'Category';

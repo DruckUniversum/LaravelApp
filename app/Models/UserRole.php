@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Dieses Model repräsentiert eine Nutzerrolle in der Anwendung.
+ * Eine Nutzerrolle ist einem Nutzer zugeordnet, d.h. ein Nutzer kann mehrere Rollen besitzen.
+ */
 class UserRole extends Model
 {
     protected $table = 'User_Roles';

@@ -4,6 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Dieses Model repräsentiert ein Design in der Anwendung.
+ * Ein Design gehört zu einer Kategorie und einem Designer, d.h. es ist einer Kategorie und einem Nutzer zugeordnet.
+ * Zudem kann ein Design mit mehreren Tags verknüpft sein.
+ */
 class Design extends Model
 {
     protected $table = 'Design';

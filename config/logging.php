@@ -109,10 +109,12 @@ return [
             'driver' => 'monolog',
             'handler' => Monolog\Handler\GelfHandler::class,
             'handler_with' => [
-                'publisher' => [
-                    'hostname' => env('GRAYLOG_HOST', 'localhost'),
-                    'port' => env('GRAYLOG_PORT', 12201),
-                ],
+                'publisher' => new \Gelf\Publisher(
+                    new \Gelf\Transport\UdpTransport(
+                        env('GRAYLOG_HOST', 'localhost'),
+                        env('GRAYLOG_PORT', 12201)
+                    )
+                )
             ],
             'formatter' => Monolog\Formatter\GelfMessageFormatter::class,
         ],

@@ -5,6 +5,10 @@ namespace App\Models;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Dieses Model repräsentiert einen Nutzer in der Anwendung.
+ * Ein Nutzer kann mehrere Rollen besitzen, ein Wallet haben, Bestellungen tätigen, Druckausschreibungen stellen, als Designer Designs erstellen und als Provider Druckausschreibungen annehmen.
+ */
 class User extends Model implements Authenticatable
 {
     protected $table = 'User';

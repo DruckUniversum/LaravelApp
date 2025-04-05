@@ -8,7 +8,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Models\User;
-use App\Models\UserRole;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -24,43 +24,55 @@ class AuthController extends Controller
         $this->cryptoPayment = $cryptoPayment;
     }
 
-    // Login-Formular anzeigen
+    /**
+     * Zeigt das Login-Formular an.
+     */
     public function showLoginForm(): View|Application|Factory
     {
-        return view('login'); // Twig wird durch Blade ersetzt
+        return view('login');
     }
 
-    // Registrierungs-Formular anzeigen
+    /**
+     * Zeigt das Registrierungsformular an.
+     */
     public function showRegisterForm(): View|Application|Factory
     {
-        return view('registration_form'); // Twig wird durch Blade ersetzt
+        return view('registration_form');
     }
 
-    // Login-Logik
+    /**
+     * Verarbeitet die Login-Anfrage des Benutzers.
+     */
     public function login(Request $request): RedirectResponse
     {
+        // Validierung der Eingabe
         $credentials = $request->validate([
             'E-Mail' => 'required|email',
             'password_usr' => 'required',
         ]);
 
+        // Versuche, den Benutzer zu authentifizieren
         if (Auth::attempt([
-            "email" => $credentials['E-Mail'],
-            "password" => $credentials['password_usr'],
+            'email' => $credentials['E-Mail'],
+            'password' => $credentials['password_usr'],
         ])) {
             $request->session()->regenerate();
-
+            Log::info('Benutzer erfolgreich eingeloggt.', ['email' => $credentials['E-Mail']]);
             return redirect()->intended('designs');
         }
 
+        Log::warning('Fehlgeschlagener Login-Versuch.', ['email' => $credentials['E-Mail']]);
         return back()->withErrors([
             'email' => 'Die bereitgestellten Anmeldedaten stimmen nicht überein.',
         ]);
     }
 
-    // Registrierung-Logik
+    /**
+     * Verarbeitet die Registrierung eines neuen Benutzers und erstellt ein zugehöriges Wallet.
+     */
     public function register(Request $request): Application|Redirector|RedirectResponse
     {
+        // Validierung der Eingaben für die Registrierung
         $validated = $request->validate([
             'E-Mail' => 'required|email|unique:App\Models\User,Email',
             'password_usr' => 'required|same:password_confirm_usr',
@@ -75,6 +87,7 @@ class AuthController extends Controller
             'Role' => 'required',
         ]);
 
+        // Neuen Benutzer erstellen
         $user = User::create([
             'Email' => $validated['E-Mail'],
             'Password_Hash' => Hash::make($validated['password_usr']),
@@ -87,31 +100,37 @@ class AuthController extends Controller
             'Country' => $validated['Country'],
             'AGB_Akzeptiert' => $validated['agb'],
             'Last_Login' => date("Y-m-d H:i:s"),
-            "Failed_Logins" => 0
+            'Failed_Logins' => 0,
         ]);
 
-        $wallet = $this->cryptoPayment::generate_wallet(env("BLOCKCYPHER_API_KEY"));
-        $coinSymbol = "bcy";
-        $priv = $wallet["private"];
-        $pub = $wallet["public"];
-        $address = $wallet["address"];
+        Log::info('Neuer Benutzer registriert.', ['user_id' => $user->id, 'email' => $user->Email]);
 
-        CryptoPayment::add_bcy($address, 10000000, env("BLOCKCYPHER_API_KEY"));
+        // Wallet für den neuen Benutzer erstellen
+        $wallet = $this->cryptoPayment::generate_wallet(env('BLOCKCYPHER_API_KEY'));
+        $coinSymbol = 'bcy';
+        $address = $wallet['address'];
+
+        CryptoPayment::add_bcy($address, 10000000, env('BLOCKCYPHER_API_KEY'));
 
         Wallet::create([
             'Address' => $address,
             'Coin_Symbol' => $coinSymbol,
-            'Pub_Key' => $pub,
-            'Priv_Key' => $priv,
+            'Pub_Key' => $wallet['public'],
+            'Priv_Key' => $wallet['private'],
             'User_ID' => $user->User_ID,
         ]);
+
+        Log::info('Wallet für den neuen Benutzer erstellt.', ['user_id' => $user->id, 'wallet_address' => $address]);
 
         return redirect('/auth/login');
     }
 
-    // Benutzer abmelden
+    /**
+     * Meldet den Benutzer ab und zerstört die Sitzung.
+     */
     public function logout(Request $request): Application|Redirector|RedirectResponse
     {
+        Log::info('Benutzer ausgeloggt.', ['user_id' => Auth::id()]);
         Auth::logout();
 
         $request->session()->invalidate();

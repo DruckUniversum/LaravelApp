@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Dieses Model repräsentiert eine Bestellung in der Anwendung.
+ * Eine Bestellung ist mit einem Nutzer und einem Design verknüpft, d.h. sie gehört einem Nutzer und wird einem Design zugeordnet.
+ */
 class Order extends Model
 {
     protected $table = 'Order';

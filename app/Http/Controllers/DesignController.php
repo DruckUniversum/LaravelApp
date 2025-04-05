@@ -6,8 +6,8 @@ use App\Models\Category;
 use App\Models\Design;
 use App\Models\Tag;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class DesignController extends Controller
@@ -17,20 +17,21 @@ class DesignController extends Controller
      */
     public function index(Request $request)
     {
-        if($request->has("category")) {
-            $designs = Design::where("Category_ID", $request->get("category"))->get();
+        $query = Design::query();
+        if ($request->filled('category')) {
+            $query->where('Category_ID', $request->get('category'));
         }
-        if($request->has("tags")) {
-            $tags = $request->get("tags");
-            $designs = Design::whereHas('tags', function ($query) use ($tags) {
-                $query->whereIn('Design_Tags.Tag_ID', $tags);
-            })->get();
+        if ($request->filled('tags')) {
+            $query->whereHas('tags', function ($subQuery) use ($request) {
+                $subQuery->whereIn('Design_Tags.Tag_ID', $request->get('tags'));
+            });
         }
-        else if(!$request->has("category") && !$request->has("tags")) $designs = Design::all();
+        $designs = $query->get();
         $categories = Category::all();
         $tags = Tag::all();
         return view('designs', compact('designs', 'categories', 'tags'));
     }
+
     /**
      * Zeigt die Liste eigener Designs.
      */
@@ -43,7 +44,7 @@ class DesignController extends Controller
     }
 
     /**
-     * Zeigt die Seite zum Erstellen eines neuen Designs.
+     * Erstellt ein neues Design.
      */
     public function create(Request $request)
     {
@@ -56,27 +57,37 @@ class DesignController extends Controller
             'cover_picture' => 'required|file|mimes:png',
             'license' => 'string|max:255',
         ]);
-        if (!$request->file('stl_file')->isValid()) return back()->with('error', 'Design nicht erstellt, da STL Datei ungültig.');
-        if (!$request->file('cover_picture')->isValid()) return back()->with('error', 'Design nicht erstellt, da Cover Bild ungültig.');
 
-        // Store the STL file in the 'storage' directory on the 'private' disk and fetch uuid
+        $stlFile = $request->file('stl_file');
+        $coverPicture = $request->file('cover_picture');
+
+        if (!$stlFile->isValid() || !$coverPicture->isValid()) {
+            return back()->with('error', 'Design konnte aufgrund ungültiger Dateien nicht erstellt werden.');
+        }
+
         $stlUuid = Str::uuid();
-        $res = $request->file('stl_file')->storeAs('stl', "$stlUuid.stl", 'private');
-        if (!$res) return back()->with('error', 'Upload ist fehlgeschlagen.');
-
-        // Store the cover picture in the 'storage' directory on the 'public' disk and fetch uuid
-        $coverPictureUuid = Str::uuid();
-        $res = $request->file('cover_picture')->storeAs('cover_picture', "$coverPictureUuid.png", 'public');
-        if (!$res) return back()->with('error', 'Upload ist fehlgeschlagen.');
-
-        if($validated["category"] == "new") {
-            if(!$request->has('new_category') || strlen($request['new_category']) == 0) return back()->with('error', 'Neue Kategorie muss angegeben werden.');
-            $category = Category::create([
-                "Name" => $request['new_category'],
+        if (!$stlFile->storeAs('stl', "$stlUuid.stl", 'private')) {
+            Log::error('Systemfehler: Upload der STL-Datei fehlgeschlagen', [
+                'designer_id' => Auth::id(),
+                'stl_uuid' => $stlUuid,
+                'original_name' => $stlFile->getClientOriginalName()
             ]);
-            $category = $category->Category_ID;
-        } else {
-            $category = intval($validated["category"]);
+            return back()->with('error', 'Upload ist fehlgeschlagen.');
+        }
+
+        $coverPictureUuid = Str::uuid();
+        if (!$coverPicture->storeAs('cover_picture', "$coverPictureUuid.png", 'public')) {
+            Log::error('Systemfehler: Upload des Cover-Bildes fehlgeschlagen', [
+                'designer_id' => Auth::id(),
+                'cover_uuid' => $coverPictureUuid,
+                'original_name' => $coverPicture->getClientOriginalName()
+            ]);
+            return back()->with('error', 'Upload ist fehlgeschlagen.');
+        }
+
+        $categoryId = $this->resolveCategory($validated, $request);
+        if (!$categoryId) {
+            return back()->with('error', 'Neue Kategorie muss angegeben werden.');
         }
 
         $design = Design::create([
@@ -86,45 +97,21 @@ class DesignController extends Controller
             "Description" => $validated['description'],
             "Cover_Picture_File" => $coverPictureUuid,
             "License" => $validated['license'],
-            "Category_ID" => $category,
+            "Category_ID" => $categoryId,
             "Designer_ID" => Auth::id(),
         ]);
-        if(!$design) return back()->with('error', 'Design konnte nicht erstellt werden.');
-
-
-        // Tags verarbeiten
-        foreach($request->all() as $key => $value) {
-            if(str_starts_with($key, "tag_")) { // Prüft, ob das Feld ein Tag repräsentiert (Präfix "tag_")
-                $tagId = intval(substr($key, 4)); // Extrahiert die Tag-ID aus dem Feldnamen
-                if(
-                    intval($value) == 1 &&  // Überprüft, ob das Tag aktiviert (zugewiesen) wurde
-                    !in_array($tagId, array_column($design->tags()->get()->toArray(), "Tag_ID"))
-                ) {
-                    $design->tags()->attach($tagId);
-                    if(!$design->tags()->where('Design_Tags.Tag_ID', $tagId)->exists()) return back()->with("error", "Tag konnte nicht verknüpft werden!");
-                }
-            }
+        if (!$design) {
+            Log::error('Systemfehler: Design konnte nicht in der Datenbank gespeichert werden', [
+                'designer_id' => Auth::id(),
+                'validated_data' => $validated
+            ]);
+            return back()->with('error', 'Design konnte nicht erstellt werden.');
         }
 
-        // Neue Tags hinzufügen
-        if($request->has("new_tags") && strlen($request->new_tags) > 0) {
-            $tags = explode(",", $request->get("new_tags")); // Trennt neue Tags durch Komma
-            foreach($tags as $tag) {
-                $tag = trim(strtolower($tag)); // Entfernt Leerzeichen und wandelt in Kleinbuchstaben um
-                $tag = str_replace(" ", "-", $tag); // Ersetzt Leerzeichen in Tags durch Bindestriche
-                $tagObj = Tag::where("Name", $tag)->first();
-                if(!$tagObj) {
-                    $tagObj = Tag::create([
-                        "Name" => $tag
-                    ]); // Erstellt ein neues Tag, wenn es noch nicht existiert
-                    if(!$tagObj) return back()->with("error", "Tag konnte nicht erstellt werden!");
-                }
-                $design->tags()->attach($tagObj->Tag_ID);
-                if(!$design->tags()->where('Design_Tags.Tag_ID', $tagObj->Tag_ID)->exists()) return back()->with("error", "Tag konnte nicht verknüpft werden!");
-            }
-        }
+        $this->attachExistingTags($design, $request);
+        $this->attachNewTags($design, $request);
 
-        return redirect("/designs/manage")->with("success", "Design wurd erfolgreich erstellt.");
+        return redirect("/designs/manage")->with("success", "Design wurde erfolgreich erstellt.");
     }
 
     /**
@@ -140,95 +127,90 @@ class DesignController extends Controller
             'description' => 'required|string|max:5000',
             'license' => 'string|max:255',
         ]);
+
         $design = Design::find($validated["design_id"]);
-        if($design->Designer_ID != auth()->id()) return redirect("/designs/manage")->with('error', 'Keine Berechtigung.');
-
-        if ($request->has("stl_file")) {
-            if(!$request->file('stl_file')->isValid()) return back()->with('error', 'STL-File ist ungültig.');
-            // Store the STL file in the 'storage' directory on the 'private' disk and fetch uuid
-            $stlUuid = Str::uuid();
-            $res = $request->file('stl_file')->storeAs('stl', "$stlUuid.stl", 'private');
-            if (!$res) return back()->with('error', 'Upload ist fehlgeschlagen.');
-
-            $res = $design->update([
-                "STL_File" => $stlUuid,
+        if ($design->Designer_ID != Auth::id()) {
+            // Sicherheitsrelevante Auffälligkeit: unautorisierter Zugriff
+            Log::error('Sicherheitsrelevant: Unautorisierter Versuch der Design-Aktualisierung', [
+                'design_id' => $design->Design_ID,
+                'designer_id' => Auth::id(),
             ]);
-            if (!$res) return back()->with('error', 'Upload ist fehlgeschlagen.');
+            return redirect("/designs/manage")->with('error', 'Keine Berechtigung.');
+        }
+
+        if ($request->hasFile("stl_file")) {
+            $stlFile = $request->file('stl_file');
+            if (!$stlFile->isValid()) {
+                return back()->with('error', 'Ungültige STL-Datei.');
+            }
+            $stlUuid = Str::uuid();
+            if (!$stlFile->storeAs('stl', "$stlUuid.stl", 'private')) {
+                Log::error('Systemfehler: Upload der STL-Datei fehlgeschlagen', [
+                    'design_id' => $design->Design_ID,
+                    'stl_uuid' => $stlUuid,
+                    'original_name' => $stlFile->getClientOriginalName()
+                ]);
+                return back()->with('error', 'Upload ist fehlgeschlagen.');
+            }
+            $design->update(["STL_File" => $stlUuid]);
         }
 
         if ($request->has('cover_picture')) {
-            if(!$request->file('stl_file')->isValid()) return back()->with('error', 'Cover Picture File ist ungültig.');
-            // Store the cover picture in the 'storage' directory on the 'public' disk and fetch uuid
+            $coverPicture = $request->file('cover_picture');
+            if (!$coverPicture->isValid()) {
+                return back()->with('error', 'Ungültiges Cover-Bild.');
+            }
             $coverPictureUuid = Str::uuid();
-            $res = $request->file('cover_picture')->storeAs('cover_picture', "$coverPictureUuid.png", 'public');
-            if (!$res) return back()->with('error', 'Upload ist fehlgeschlagen.');
-
-            $res = $design->update([
-                "Cover_Picture_File" => $coverPictureUuid,
-            ]);
-            if (!$res) return back()->with('error', 'Upload ist fehlgeschlagen.');
+            if (!$coverPicture->storeAs('cover_picture', "$coverPictureUuid.png", 'public')) {
+                Log::error('Systemfehler: Upload des Cover-Bildes fehlgeschlagen', [
+                    'design_id' => $design->Design_ID,
+                    'cover_uuid' => $coverPictureUuid,
+                    'original_name' => $coverPicture->getClientOriginalName()
+                ]);
+                return back()->with('error', 'Upload ist fehlgeschlagen.');
+            }
+            $design->update(["Cover_Picture_File" => $coverPictureUuid]);
         }
 
-        if($validated["category"] == "new") {
-            if(!$request->has('new_category') || strlen($request['new_category']) == 0) return back()->with('error', 'Neue Kategorie muss angegeben werden.');
-            $category = Category::create([
-                "Name" => $request['new_category'],
-            ]);
-            $category = $category->Category_ID;
+        if ($validated["category"] === "new") {
+            $categoryId = $this->resolveCategory($validated, $request);
+            if (!$categoryId) {
+                return back()->with('error', 'Neue Kategorie muss angegeben werden.');
+            }
         } else {
-            $category = intval($validated["category"]);
+            $categoryId = intval($validated["category"]);
         }
 
-        $res = $design->update([
+        $design->update([
             "Name" => $validated['name'],
             "Price" => $validated['price'],
             "Description" => $validated['description'],
             "License" => $validated['license'],
-            "Category_ID" => $category,
+            "Category_ID" => $categoryId,
         ]);
-        if(!$res) return back()->with('error', 'Design konnte nicht gespeichert werden.');
 
-
-        // Tags verarbeiten
-        foreach($request->all() as $key => $value) {
-            if(str_starts_with($key, "tag_")) { // Prüft, ob das Feld ein Tag repräsentiert (Präfix "tag_")
-                $tagId = intval(substr($key, 4)); // Extrahiert die Tag-ID aus dem Feldnamen
-                if(
-                    intval($value) == 0 &&  // Überprüft, ob das Tag aktiviert (zugewiesen) wurde
-                    in_array($tagId, array_column($design->tags()->get()->toArray(), "Tag_ID"))
-                ) {
+        foreach ($request->all() as $key => $value) {
+            if (str_starts_with($key, "tag_")) {
+                $tagId = intval(substr($key, 4));
+                if (intval($value) === 0 && in_array($tagId, array_column($design->tags()->get()->toArray(), "Tag_ID"))) {
                     $design->tags()->detach($tagId);
-                    if($design->tags()->where('Design_Tags.Tag_ID', $tagId)->exists()) return back()->with("error", "Tag konnte nicht verknüpft werden!");
-                }
-                elseif(
-                    intval($value) == 1 &&  // Überprüft, ob das Tag aktiviert (zugewiesen) wurde
-                    !in_array($tagId, array_column($design->tags()->get()->toArray(), "Tag_ID"))
-                ) {
+                } elseif (intval($value) === 1 && !in_array($tagId, array_column($design->tags()->get()->toArray(), "Tag_ID"))) {
                     $design->tags()->attach($tagId);
-                    if(!$design->tags()->where('Design_Tags.Tag_ID', $tagId)->exists()) return back()->with("error", "Tag konnte nicht verknüpft werden!");
                 }
             }
         }
 
-        // Neue Tags hinzufügen
-        if($request->has("new_tags") && strlen($request->new_tags) > 0) {
-            $tags = explode(",", $request->get("new_tags")); // Trennt neue Tags durch Komma
-            foreach($tags as $tag) {
-                $tag = trim(strtolower($tag)); // Entfernt Leerzeichen und wandelt in Kleinbuchstaben um
-                $tag = str_replace(" ", "-", $tag); // Ersetzt Leerzeichen in Tags durch Bindestriche
-                $tagObj = Tag::where("Name", $tag)->first();
-                if(!$tagObj) {
-                    $tagObj = Tag::create([
-                        "Name" => $tag
-                    ]); // Erstellt ein neues Tag, wenn es noch nicht existiert
-                    if(!$tagObj) return back()->with("error", "Tag konnte nicht erstellt werden!");
-                }
+        if ($request->filled("new_tags")) {
+            $tags = explode(",", $request->get("new_tags"));
+            foreach ($tags as $tag) {
+                $formattedTag = str_replace(" ", "-", trim(strtolower($tag)));
+                $tagObj = Tag::firstOrCreate(["Name" => $formattedTag]);
                 $design->tags()->attach($tagObj->Tag_ID);
-                if(!$design->tags()->where('Design_Tags.Tag_ID', $tagObj->Tag_ID)->exists()) return back()->with("error", "Tag konnte nicht verknüpft werden!");
             }
         }
 
-        return redirect("/designs/manage")->with("success", "Design wurde erfolgreich aktualisiert.");}
+        return redirect("/designs/manage")->with("success", "Design wurde erfolgreich aktualisiert.");
+    }
 
     /**
      * Löscht ein Design.
@@ -238,10 +220,67 @@ class DesignController extends Controller
         $validated = $request->validate([
             'design_id' => 'required|exists:App\Models\Design,Design_ID',
         ]);
-        $design = Design::find($validated["design_id"]);
-        if($design->Designer_ID != auth()->id()) return redirect("/designs/manage")->with('error', 'Keine Berechtigung.');
-        if(!$design->delete()) return redirect("/designs/manage")->with('error', 'Design konnte nicht gelöscht werden.');
 
+        $design = Design::find($validated["design_id"]);
+        if ($design->Designer_ID != Auth::id()) {
+            Log::error('Sicherheitsrelevant: Unautorisierter Versuch der Design-Löschung', [
+                'design_id' => $design->Design_ID,
+                'designer_id' => Auth::id()
+            ]);
+            return redirect("/designs/manage")->with('error', 'Keine Berechtigung.');
+        }
+        if (!$design->delete()) {
+            Log::error('Systemfehler: Design-Löschung fehlgeschlagen', [
+                'design_id' => $validated['design_id'],
+                'designer_id' => Auth::id()
+            ]);
+            return redirect("/designs/manage")->with('error', 'Design konnte nicht gelöscht werden.');
+        }
         return redirect("/designs/manage")->with('success', 'Design erfolgreich gelöscht.');
+    }
+
+    private function resolveCategory(array $validated, Request $request): ?int
+    {
+        if ($validated["category"] === "new") {
+            if (!$request->filled('new_category')) {
+                return null;
+            }
+            $newCategory = trim($request->input('new_category'));
+            $category = Category::create(["Name" => $newCategory]);
+            if (!$category) {
+                Log::error('Systemfehler: Fehler beim Erstellen der neuen Kategorie', [
+                    'category_name' => $newCategory,
+                    'designer_id' => Auth::id()
+                ]);
+                return null;
+            }
+            return $category->Category_ID;
+        }
+        return intval($validated["category"]);
+    }
+
+    private function attachExistingTags(Design $design, Request $request): void
+    {
+        $existingTagIds = array_column($design->tags()->get()->toArray(), "Tag_ID");
+        foreach ($request->all() as $key => $value) {
+            if (str_starts_with($key, "tag_") && intval($value) === 1) {
+                $tagId = intval(substr($key, 4));
+                if (!in_array($tagId, $existingTagIds)) {
+                    $design->tags()->attach($tagId);
+                }
+            }
+        }
+    }
+
+    private function attachNewTags(Design $design, Request $request): void
+    {
+        if ($request->filled("new_tags")) {
+            $tags = explode(",", $request->get("new_tags"));
+            foreach ($tags as $tag) {
+                $formattedTag = str_replace(" ", "-", trim(strtolower($tag)));
+                $tagObj = Tag::firstOrCreate(["Name" => $formattedTag]);
+                $design->tags()->attach($tagObj->Tag_ID);
+            }
+        }
     }
 }

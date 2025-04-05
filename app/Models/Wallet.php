@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Dieses Model repräsentiert ein Wallet in der Anwendung.
+ * Ein Wallet gehört zu genau einem Nutzer, d.h. einem Wallet ist immer genau ein Nutzer zugeordnet.
+ */
 class Wallet extends Model
 {
     protected $table = 'Wallet';

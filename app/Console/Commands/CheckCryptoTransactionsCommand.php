@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Tender;
 use App\Services\CryptoPayment;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class CheckCryptoTransactionsCommand extends Command
 {
@@ -28,42 +29,92 @@ class CheckCryptoTransactionsCommand extends Command
      */
     public function handle()
     {
+        Log::info('Start der Überprüfung von Krypto-Transaktionen.', ['command' => $this->signature]);
+
         // Laden aller Bestellungen mit dem Status "OPEN"
         $orders = Order::where('Payment_Status', 'OPEN')
             ->whereNotNull('Transaction_Hash')
             ->get();
-        foreach($orders as $order) {
+
+        Log::info('Überprüfung offener Bestellungen gestartet.', ['order_count' => $orders->count()]);
+
+        foreach ($orders as $order) {
             $txHash = $order->Transaction_Hash; // Abrufen des Transaktions-Hashes (z. B. einer Blockchain-Zahlung)
-            if(!$txHash) continue; // Falls kein Transaktions-Hash vorhanden ist, überspringen
+            if (!$txHash) {
+                Log::warning('Überspringe Bestellung ohne Transaktions-Hash.', [
+                    'order_id' => $order->id
+                ]);
+                continue;
+            }
 
             // Überprüfung der Transaktion auf Blockchain-Confirmations
-            $check = intval(CryptoPayment::check_confirmations(
-                $txHash
-            ));
+            $confirmations = intval(CryptoPayment::check_confirmations($txHash));
+            Log::info('Transaktionsüberprüfung für Bestellung.', [
+                'order_id' => $order->id,
+                'tx_hash'  => $txHash,
+                'confirmations' => $confirmations,
+            ]);
 
             // Wenn genügend Bestätigungen vorhanden sind, wird der Zahlungsstatus aktualisiert
-            if($check) {
+            if ($confirmations) {
                 $order->Payment_Status = "PAID"; // Zahlungsstatus der Bestellung auf "BEZAHLT" setzen
-                $order->save(); // Änderungen speichern
+                if ($order->save()) {
+                    Log::info('Zahlungsstatus der Bestellung auf PAID gesetzt.', [
+                        'order_id' => $order->id,
+                        'tx_hash'  => $txHash
+                    ]);
+                } else {
+                    Log::error('Fehler beim Speichern des aktualisierten Zahlungsstatus der Bestellung.', [
+                        'order_id' => $order->id,
+                        'tx_hash'  => $txHash
+                    ]);
+                }
             }
         }
 
-
+        // Laden aller Tenders mit dem Status "ACCEPTED"
         $tenders = Tender::where('Status', 'ACCEPTED')
             ->whereNotNull('Transaction_Hash')
             ->get();
-        foreach($tenders as $tender) {
-            $txHash = $tender->Transaction_Hash;
-            $check = CryptoPayment::check_confirmations(
-                $txHash
-            );
 
-            // Wenn die Transaktion valide ist, wird der Status der Ausschreibung auf "BEZAHLT" geändert
-            if($check) {
+        Log::info('Überprüfung der Tenders gestartet.', ['tender_count' => $tenders->count()]);
+
+        foreach ($tenders as $tender) {
+            $txHash = $tender->Transaction_Hash;
+            if (!$txHash) {
+                Log::warning('Überspringe Tender ohne Transaktions-Hash.', [
+                    'tender_id' => $tender->id
+                ]);
+                continue;
+            }
+
+            $confirmations = CryptoPayment::check_confirmations($txHash);
+            Log::info('Transaktionsüberprüfung für Tender.', [
+                'tender_id'   => $tender->id,
+                'tx_hash'     => $txHash,
+                'confirmations' => $confirmations,
+            ]);
+
+            // Wenn die Transaktion valide ist, wird der Status der Ausschreibung auf "PAID" geändert
+            if ($confirmations) {
                 $tender->Status = "PAID"; // Status der Ausschreibung auf "BEZAHLT" setzen
-                $tender->save(); // Änderungen speichern
+                if ($tender->save()) {
+                    Log::info('Status der Ausschreibung auf PAID gesetzt.', [
+                        'tender_id' => $tender->id,
+                        'tx_hash'   => $txHash
+                    ]);
+                } else {
+                    Log::error('Fehler beim Speichern des aktualisierten Status der Ausschreibung.', [
+                        'tender_id' => $tender->id,
+                        'tx_hash'   => $txHash
+                    ]);
+                }
             }
         }
 
+        Log::info('Überprüfung von Krypto-Transaktionen abgeschlossen.', [
+            'order_count_processed' => $orders->count(),
+            'tender_count_processed' => $tenders->count()
+        ]);
     }
 }

@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Dieses Model repräsentiert einen Chat in der Anwendung.
+ * Ein Chat gehört zu einem Tender sowie zu einem User, d.h. er ist mit beiden Entitäten verknüpft.
+ */
 class Chat extends Model
 {
     protected $table = 'Chat';
