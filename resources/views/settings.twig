@@ -5,6 +5,14 @@
 {% endblock %}
 
 {% block content %}
+    {% if api_key %}
+        <div class="alert alert-important alert-warning alert-dismissible" role="alert">
+            <div>
+                <h4 class="alert-heading mt-3"><b>WICHTIG! </b>API-Key: {{ api_key }}. Dieser Key kann NICHT erneut erzeugt werden!</h4>
+            </div>
+            <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+        </div>
+    {% endif %}
     <div class="card">
         <div class="row g-0">
             <div class="col-12 d-flex flex-column">
@@ -60,19 +68,72 @@
                     </div>
                 </form>
             </div>
+        </div>
+    </div>
+    <div class="card mt-3">
+        <div class="row g-0">
             <div class="col-12 d-flex flex-column">
                 <div class="card-body">
                     <h2 class="mb-4">Rollenzuweisung</h2>
 
-                    <form method="post" action="/settings/verify/designer">
-                        <button type="submit" class="btn btn-dark">Verfikation als Designer</button>
-                    </form>
-
-                    <form method="post" action="/settings/verify/provider">
-                        <button type="submit" class="btn btn-dark">Verfikation als Druckdienstleister</button>
-                    </form>
+                    <div class="row">
+                        <div class="col-3">
+                            <form method="post" action="/settings/verify/designer">
+                                <button type="submit" class="btn btn-dark w-100">Verfikation als Designer</button>
+                            </form>
+                        </div>
+                        <div class="col-3">
+                            <form method="post" action="/settings/verify/provider">
+                                <button type="submit" class="btn btn-dark w-100">Verfikation als Druckdienstleister</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    {% if "Provider" in auth.roles %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h2>Druckerverwaltung</h2>
+            </div>
+            <div class="card-body">
+                <h3>Neuen Drucker anlegen</h3>
+                <form action="/settings/printer/create" method="POST">
+                    <button type="submit" class="btn btn-primary">Erstellen</button>
+                </form>
+                <!-- Tabelle mit vorhandenen Druckern -->
+                <h3 class="mt-3">Drucker-Übersicht</h3>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Aktionen</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for printer in auth.user.printers %}
+                        <tr>
+                            <td>{{ printer.Printer_ID }}</td>
+                            <td>
+                                <!-- Formular zum Löschen dieses Druckers -->
+                                <form action="/settings/printer/remove" method="POST" style="display: inline;">
+                                    <input type="hidden" name="printer_id" value="{{ printer.Printer_ID }}">
+                                    <button type="submit" class="btn btn-danger">Löschen</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4">Keine Drucker vorhanden.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    {% endif %}
+
 {% endblock %}

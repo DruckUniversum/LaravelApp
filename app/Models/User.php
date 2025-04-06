@@ -43,6 +43,11 @@ class User extends Model implements Authenticatable
         return $this->hasMany(Design::class, 'Designer_ID');
     }
 
+    public function printers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Printer::class, 'User_ID');
+    }
+
     public function getAuthIdentifierName()
     {
         return "User_ID";

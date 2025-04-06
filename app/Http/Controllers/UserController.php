@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Printer;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Foundation\Application;
@@ -11,6 +12,7 @@ use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 
 class UserController extends Controller
 {
@@ -24,7 +26,13 @@ class UserController extends Controller
             'user_id' => $user->User_ID,
             'email'   => $user->{"E-Mail"}
         ]);
-        return view('settings', compact('user')); // Blade: resources/views/user/settings.blade.php
+        if(Session::get('api_key')) {
+            return view('settings', [
+                "user" => compact('user'),
+                "api_key" => Session::get('api_key')
+            ]);
+        }
+        return view('settings', compact('user'));
     }
 
     /**
@@ -140,5 +148,109 @@ class UserController extends Controller
         ]);
 
         return redirect("/settings")->with('success', 'Rolle wurde erfolgreich zugewiesen.');
+    }
+
+    /**
+     * Erstellt Drucker-Instanz
+     *
+     * @param Request $request
+     */
+    public function createPrinter(Request $request)
+    {
+        $user = Auth::user();
+
+        $hasRole = false;
+        foreach ($user->roles as $role) {
+            if ($role->Role === 'Provider') {
+                $hasRole = true;
+                break;
+            }
+        }
+        if (!$hasRole) {
+            Log::warning('Unberechtigter Versuch eine Drucker-Instanz hinzuzufügen/zu bearbeiten.', [
+                'user_id'   => auth()->id(),
+                'tender_id' => $request->tender_id
+            ]);
+            return redirect()->back()->with('error', 'Nicht berechtigt.');
+        }
+
+        $apiKey = bin2hex(openssl_random_pseudo_bytes(16));
+
+        $printer = Printer::create([
+            'API_Key' => Hash::make($apiKey),
+            'User_ID' => $user->User_ID
+        ]);
+        if (!$printer) {
+            Log::error('Fehler bei Druckererzeugung.', [
+                'user_id' => $user->User_ID
+            ]);
+            return back()->with('error', 'Drucker wurde nicht erzeugt.');
+        }
+
+        Log::info('Drucker erfolgreich erstellt.', [
+            'user_id' => $user->User_ID,
+            'printer_id'   => $printer->Printer_ID
+        ]);
+
+        return redirect("/settings")->with([
+            'success' => 'Drucker wurde erfolgreich erstellt.',
+            'api_key' => $apiKey
+        ]);
+    }
+
+    /**
+     * Entfernt Drucker-Instanz
+     *
+     * @param Request $request
+     */
+    public function removePrinter(Request $request)
+    {
+        $validated = $request->validate([
+            'printer_id' => 'required|exists:App\Models\Printer,Printer_ID',
+        ]);
+
+        $user = Auth::user();
+
+        $hasRole = false;
+        foreach ($user->roles as $role) {
+            if ($role->Role === 'Provider') {
+                $hasRole = true;
+                break;
+            }
+        }
+        if (!$hasRole) {
+            Log::warning('Unberechtigter Versuch eine Drucker-Instanz hinzuzufügen/zu bearbeiten.', [
+                'user_id'   => auth()->id(),
+                'tender_id' => $request->tender_id
+            ]);
+            return redirect()->back()->with('error', 'Nicht berechtigt.');
+        }
+
+        $printer = Printer::find($validated['printer_id']);
+        if (!$printer) {
+            Log::warning('Drucker nicht gefunden.', [
+                'user_id' => $user->User_ID,
+                'printer_id' => $validated['printer_id']
+            ]);
+            return back()->with('error', 'Drucker wurde nicht gefunden.');
+        }
+
+        if($printer->User_ID != $user->User_ID) {
+            Log::error('Sicherheitsrelevant: Nicht berechtigt diesen Drucker zu löschen.', [
+                'user_id' => $user->User_ID,
+                'printer_id' => $printer->Printer_ID
+            ]);
+            return back()->with('error', 'Nicht berechtigt, diesen Drucker zu löschen.');
+        }
+
+        if(!$printer->delete()) {
+            Log::error('Fehler bei Drucker-Entfernung.', [
+                'user_id' => $user->User_ID,
+                'printer_id' => $printer->Printer_ID
+            ]);
+            return back()->with('error', 'Drucker konnte nicht gelöscht werden.');
+        }
+
+        return redirect("/settings")->with('success', 'Drucker wurde erfolgreich gelöscht.');
     }
 }

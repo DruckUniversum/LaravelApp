@@ -12,7 +12,8 @@
         "laravel/socialite": "^5.19",
         "laravel/tinker": "^2.10.1",
         "rcrowe/twigbridge": "^0.14.4",
-        "twig/twig": "^3.20"
+        "twig/twig": "^3.20",
+        "ext-openssl": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

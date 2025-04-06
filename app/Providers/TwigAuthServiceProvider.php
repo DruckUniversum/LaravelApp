@@ -12,8 +12,13 @@ class TwigAuthServiceProvider extends ServiceProvider {
     public function boot(Environment $twig) {
         View::composer('*', function ($view) use ($twig) {
             $user = Auth::user();
+            $roles = [];
+            foreach ($user->roles as $role) {
+                $roles[] = $role->Role;
+            }
             $twig->addGlobal('auth', [
                 'user' => $user,
+                'roles' => $roles,
                 'isAuthenticated' => Auth::check(),
             ]);
             $twig->addGlobal('error', Session::get('error'));

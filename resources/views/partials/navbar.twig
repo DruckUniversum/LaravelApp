@@ -16,19 +16,16 @@
                 <li class="nav-item"><a class="nav-link" href="/wallet">Wallet</a></li>
                 <li class="nav-item"><a class="nav-link" href="/settings">Einstellungen</a></li>
             {% endif %}
-            <li class="nav-item"><a class="nav-link" href="/tenders">Druck-Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="/designs/manage">Designs verwalten</a></li>
-            {% if "Provider" in roles %}
+            {% if "Provider" in auth.roles %}
             <li class="nav-item"><a class="nav-link" href="/tenders">Druck-Dashboard</a></li>
             {% endif %}
-            {% if "Designer" in roles %}
+            {% if "Designer" in auth.roles %}
             <li class="nav-item"><a class="nav-link" href="/designs/manage">Designs verwalten</a></li>
             {% endif %}
         </ul>
         <div class="navbar-nav ms-auto d-flex align-items-center">
             {% if not auth.isAuthenticated %}
                 <a href="/auth/login" class="btn btn-outline-primary me-2">Login</a>
-                <a href="/auth/register" class="btn btn-outline-primary me-2">Register</a>
             {% endif %}
             {% if auth.isAuthenticated %}
                 <span class="text-black me-3"><b>{{ auth.user.Email }}</b></span>

@@ -44,6 +44,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('settings/update', [UserController::class, 'settingsUpdate']);
     Route::post('settings/verify/designer', [UserController::class, 'verifyDesigner']);
     Route::post('settings/verify/provider', [UserController::class, 'verifyProvider']);
+    Route::post('settings/printer/create', [UserController::class, 'createPrinter']);
+    Route::post('settings/printer/remove', [UserController::class, 'removePrinter']);
 
     // Wallet-Routen
     Route::get('wallet', [WalletController::class, 'index']);
