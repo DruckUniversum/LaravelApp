@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\EncryptedCast;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -14,6 +15,10 @@ class Chat extends Model
     protected $primaryKey = 'Chat_ID';
 
     protected $fillable = ['Tender_ID', 'User_ID', 'Timestamp', 'Content'];
+
+    protected $casts = [
+        'Content' => EncryptedCast::class,
+    ];
     public $timestamps = false;
 
     public function tender(): \Illuminate\Database\Eloquent\Relations\BelongsTo

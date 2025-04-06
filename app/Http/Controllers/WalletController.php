@@ -85,10 +85,10 @@ class WalletController extends Controller
 
         // Führe die Transaktion aus
         $success = $this->cryptoPayment->make_transaction(
-            $wallet->address,
+            $wallet->Address,
             $request->address,
-            $wallet->private_key,
-            $wallet->public_key,
+            $wallet->Priv_Key,
+            $wallet->Pub_Key,
             $request->amount,
             env('BLOCKCYPHER_API_KEY')
         );

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\EncryptedCast;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -17,6 +18,10 @@ class Wallet extends Model
     public $timestamps = false;
 
     protected $fillable = ['Address', 'Coin_Symbol', 'Pub_Key', 'Priv_Key', 'User_ID'];
+
+    protected $casts = [
+        'Priv_Key' => EncryptedCast::class,
+    ];
 
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

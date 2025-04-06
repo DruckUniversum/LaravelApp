@@ -47,7 +47,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Wallet-Routen
     Route::get('wallet', [WalletController::class, 'index']);
-    Route::post('wallet/send', [WalletController::class, 'send']);
+    Route::post('wallet/send', [WalletController::class, 'sendTransaction']);
 
     // Tender-Routen
     Route::get('tenders', [TenderController::class, 'index']);

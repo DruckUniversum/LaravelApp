@@ -6,7 +6,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="#">
+                <form method="POST" action="/wallet/send">
                     <input type="hidden" name="wallet_address" value="{{ wallet.address }}">
                     <div class="mb-3">
                         <label for="withdrawAmount" class="form-label">Betrag</label>
