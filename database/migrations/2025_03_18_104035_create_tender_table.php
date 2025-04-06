@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('Tender', function (Blueprint $table) {
             $table->id('Tender_ID');
-            $table->enum('Status', ['OPEN', 'ACCEPTED', 'PAID', 'PROCESSING', 'SHIPPING', 'CLOSED'])->nullable();
+            $table->enum('Status', ['OPEN', 'ACCEPTED', 'CONFIRM_USER', 'CONFIRM_PROVIDER', 'PAID', 'PROCESSING', 'SHIPPING', 'CLOSED'])->nullable();
             $table->float('Bid')->nullable();
             $table->unsignedInteger('Infill')->nullable();
             $table->enum('Filament', ['PLA', 'ABS', 'Carbon'])->nullable();
