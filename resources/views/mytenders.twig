@@ -37,7 +37,7 @@
                                 <span class="badge bg-success" style="color: #FFFFFF;">Bezahlt</span>
                             {% elseif tender.Status == 'PROCESSING' %}
                                 <span class="badge bg-warning" style="color: #FFFFFF;">In Bearbeitung</span>
-                            {% elseif tender.Status == 'SHIPPING' %}
+                            {% elseif tender.Status == 'SHIPPED' %}
                                 <span class="badge bg-primary" style="color: #FFFFFF;">In Versand</span>
                             {% elseif tender.Status == 'CLOSED' %}
                                 <span class="badge bg-dark" style="color: #FFFFFF;">Erhalten</span>
@@ -58,7 +58,7 @@
                                     Chat
                                 </button>
                             </div>
-                            {% if tender.Status == 'SHIPPING' %}
+                            {% if tender.Status == 'SHIPPED' %}
                                 <div class="col-6">
                                     <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#shippingModal{{ tender.Tender_ID }}">
                                         Versandinformationen
@@ -82,7 +82,7 @@
                                 </div>
 
                             <!-- Closed-Button -->
-                            {% elseif tender.Status == 'SHIPPING' %}
+                            {% elseif tender.Status == 'SHIPPED' %}
                                 <div class="col-3">
                                     <form method="post" action="/tenders/my/close">
                                         <input type="hidden" name="tender_id" value="{{ tender.Tender_ID }}">
@@ -99,7 +99,7 @@
                 {% include 'modals/tenders/info_modal.twig' with {
                     'tender': tender
                 } %}
-                {% if tender.Status in ["PROCESSING", "SHIPPING"] %}
+                {% if tender.Status in ["PROCESSING", "SHIPPED"] %}
                     {% include 'modals/tenders/shipping_modal.twig' with {
                         'tender': tender
                     } %}

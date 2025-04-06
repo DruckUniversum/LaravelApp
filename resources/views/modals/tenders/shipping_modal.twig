@@ -3,7 +3,7 @@
         <div class="modal-content">
             <form method="post" action="/tenders/ship">
                 <input type="hidden" name="tender_id" value="{{ tender.Tender_ID }}">
-                <input type="hidden" name="action" value="SHIPPING">
+                <input type="hidden" name="action" value="SHIPPED">
                 <div class="modal-header">
                     <h5 class="modal-title" id="shippingModalLabel{{ tender.Tender_ID }}">
                         Versandinformationen - Ausschreibung ID {{ tender.Tender_ID }}
@@ -21,7 +21,7 @@
                     <div class="mb-3">
                         <label for="shippingProvider{{ tender.Tender_ID }}" class="form-label">Versanddienstleister</label>
                         <input type="text" name="shipping_provider" class="form-control" id="shippingProvider{{ tender.Tender_ID }}"
-                                {% if tender.Status == 'SHIPPING' %}
+                                {% if tender.Status == 'SHIPPED' %}
                                     value="{{ tender.Shipping_Provider }}"
                                 {% endif %}
                                required
@@ -30,7 +30,7 @@
                     <div class="mb-3">
                         <label for="shippingNumber{{ tender.Tender_ID }}" class="form-label">Sendungsnummer</label>
                         <input type="text" name="shipping_number" class="form-control" id="shippingNumber{{ tender.Tender_ID }}"
-                                {% if tender.Status == 'SHIPPING' %}
+                                {% if tender.Status == 'SHIPPED' %}
                                     value="{{ tender.Shipping_Number }}"
                                 {% endif %}
                                required
@@ -40,14 +40,15 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
-                    <button type="submit" class="btn btn-primary">
-                        {% if tender.Status == 'PROCESSING' %}
-                            Versenden
-                        {% elseif tender.Status == 'SHIPPING' %}
-                            Speichern
-                        {% endif %}
-                    </button>
-
+                    {% if tender.Provider_ID == auth.user.User_ID %}
+                        <button type="submit" class="btn btn-primary">
+                            {% if tender.Status == 'PROCESSING' %}
+                                Versenden
+                            {% elseif tender.Status == 'SHIPPED' %}
+                                Speichern
+                            {% endif %}
+                        </button>
+                    {% endif %}
                 </div>
             </form>
         </div>

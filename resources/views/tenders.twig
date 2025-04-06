@@ -35,7 +35,7 @@
                             <span class="badge bg-success" style="color: #FFFFFF;">Bezahlt</span>
                         {% elseif tender.Status == 'PROCESSING' %}
                             <span class="badge bg-warning" style="color: #FFFFFF;">In Bearbeitung</span>
-                        {% elseif tender.Status == 'SHIPPING' %}
+                        {% elseif tender.Status == 'SHIPPED' %}
                             <span class="badge bg-primary" style="color: #FFFFFF;">In Versand</span>
                         {% elseif tender.Status == 'CLOSED' %}
                             <span class="badge bg-dark" style="color: #FFFFFF;">Erhalten</span>
@@ -86,7 +86,7 @@
                                     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#shippingModal{{ tender.Tender_ID }}">
                                         Versenden
                                     </button>
-                                {% elseif tender.Status == 'SHIPPING' %}
+                                {% elseif tender.Status == 'SHIPPED' %}
                                     <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#shippingModal{{ tender.Tender_ID }}">
                                         Versandinformationen
                                     </button>
@@ -101,7 +101,7 @@
                 {% include 'modals/tenders/chat_modal.twig' with {
                     'tender': tender
                 } %}
-                {% if tender.Status in ["PROCESSING", "SHIPPING"] %}
+                {% if tender.Status in ["PROCESSING", "SHIPPED"] %}
                     {% include 'modals/tenders/shipping_modal.twig' with {
                         'tender': tender
                     } %}
@@ -158,7 +158,7 @@
                             <span class="badge bg-success" style="color: #FFFFFF;">Bezahlt</span>
                         {% elseif tender.Status == 'PROCESSING' %}
                             <span class="badge bg-warning" style="color: #FFFFFF;">In Bearbeitung</span>
-                        {% elseif tender.Status == 'SHIPPING' %}
+                        {% elseif tender.Status == 'SHIPPED' %}
                             <span class="badge bg-primary" style="color: #FFFFFF;">In Versand</span>
                         {% elseif tender.Status == 'CLOSED' %}
                             <span class="badge bg-dark" style="color: #FFFFFF;">Erhalten</span>
