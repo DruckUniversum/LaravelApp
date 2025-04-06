@@ -24,6 +24,10 @@
                         <span class="badge bg-primary" style="color: #FFFFFF;">Offen</span>
                     {% elseif tender.Status == 'ACCEPTED' %}
                         <span class="badge bg-success" style="color: #FFFFFF;">Akzeptiert</span>
+                    {% elseif tender.Status == 'CONFIRM_USER' %}
+                        <span class="badge bg-success" style="color: #FFFFFF;">User bestätigt</span>
+                    {% elseif tender.Status == 'CONFIRM_PROVIDER' %}
+                        <span class="badge bg-success" style="color: #FFFFFF;">Druckdienstleister bestätigt</span>
                     {% elseif tender.Status == 'PAID' %}
                         <span class="badge bg-success" style="color: #FFFFFF;">Bezahlt</span>
                     {% elseif tender.Status == 'PROCESSING' %}

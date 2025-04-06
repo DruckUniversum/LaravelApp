@@ -23,10 +23,7 @@ class User extends Model implements Authenticatable
         'City',
         'Postal_Code',
         'Email',
-        'Password_Hash',
-        'AGB_Akzeptiert',
-        'Last_Login',
-        'Failed_Logins',
+        'google_id',
         'Remember_Token'
     ];
     protected $hidden = ['Password_Hash'];

@@ -27,6 +27,10 @@
                             <span class="badge bg-primary" style="color: #FFFFFF;">Offen</span>
                         {% elseif tender.Status == 'ACCEPTED' %}
                             <span class="badge bg-success" style="color: #FFFFFF;">Akzeptiert</span>
+                        {% elseif tender.Status == 'CONFIRM_USER' %}
+                            <span class="badge bg-success" style="color: #FFFFFF;">User bestätigt</span>
+                        {% elseif tender.Status == 'CONFIRM_PROVIDER' %}
+                            <span class="badge bg-success" style="color: #FFFFFF;">Druckdienstleister bestätigt</span>
                         {% elseif tender.Status == 'PAID' %}
                             <span class="badge bg-success" style="color: #FFFFFF;">Bezahlt</span>
                         {% elseif tender.Status == 'PROCESSING' %}
@@ -54,13 +58,19 @@
                             </div>
 
                             <div class="col-3">
-                                <!-- Claim-Button -->
-                                {% if tender.Status == 'OPEN' %}
-                                    <form method="post" action="#">
+                                <!-- Confirm-Button -->
+                                {% if tender.Status == 'CONFIRM_USER' %}
+                                    <form method="post" action="/tenders/confirm">
                                         <input type="hidden" name="tender_id" value="{{ tender.Tender_ID }}">
-                                        <input type="hidden" name="action" value="ACCEPTED">
-                                        <button type="submit" class="btn btn-primary">Akzeptieren</button>
+                                        <button type="submit" class="btn btn-primary">Bestätigen</button>
                                     </form>
+
+                                {% elseif tender.Status == 'CONFIRM_PROVIDER' %}
+                                    <div class="col-6">
+                                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#transactionModal{{ tender.Tender_ID }}">
+                                            Transaktionsdetails
+                                        </button>
+                                    </div>
 
                                 <!-- Processing-Button abhängig von Status und Kontext -->
                                 {% elseif tender.Status == 'PAID' %}
@@ -94,6 +104,15 @@
                 {% if tender.Status in ["PROCESSING", "SHIPPING"] %}
                     {% include 'modals/tenders/shipping_modal.twig' with {
                         'tender': tender
+                    } %}
+                {% endif %}
+
+                {% if tender.Status == "CONFIRM_PROVIDER" %}
+                    {% include 'modals/transaction_modal.twig' with {
+                        TransactionHash: tender.Transaction_Hash,
+                        PaidPrice: tender.Bid,
+                        PaymentStatus: tender.Status,
+                        Id: tender.Tender_ID
                     } %}
                 {% endif %}
             {% endfor %}
@@ -131,6 +150,10 @@
                             <span class="badge bg-primary" style="color: #FFFFFF;">Offen</span>
                         {% elseif tender.Status == 'ACCEPTED' %}
                             <span class="badge bg-success" style="color: #FFFFFF;">Akzeptiert</span>
+                        {% elseif tender.Status == 'CONFIRM_USER' %}
+                            <span class="badge bg-success" style="color: #FFFFFF;">User bestätigt</span>
+                        {% elseif tender.Status == 'CONFIRM_PROVIDER' %}
+                            <span class="badge bg-success" style="color: #FFFFFF;">Druckdienstleister bestätigt</span>
                         {% elseif tender.Status == 'PAID' %}
                             <span class="badge bg-success" style="color: #FFFFFF;">Bezahlt</span>
                         {% elseif tender.Status == 'PROCESSING' %}

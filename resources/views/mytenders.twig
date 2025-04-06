@@ -29,6 +29,10 @@
                                 <span class="badge bg-primary" style="color: #FFFFFF;">Offen</span>
                             {% elseif tender.Status == 'ACCEPTED' %}
                                 <span class="badge bg-success" style="color: #FFFFFF;">Akzeptiert</span>
+                            {% elseif tender.Status == 'CONFIRM_USER' %}
+                                <span class="badge bg-success" style="color: #FFFFFF;">User bestätigt</span>
+                            {% elseif tender.Status == 'CONFIRM_PROVIDER' %}
+                                <span class="badge bg-success" style="color: #FFFFFF;">Druckdienstleister bestätigt</span>
                             {% elseif tender.Status == 'PAID' %}
                                 <span class="badge bg-success" style="color: #FFFFFF;">Bezahlt</span>
                             {% elseif tender.Status == 'PROCESSING' %}
@@ -61,8 +65,16 @@
                                     </button>
                                 </div>
                             {% endif %}
-                            <!-- Transaction-Details-Button -->
+
                             {% if tender.Status == 'ACCEPTED' %}
+                                <form method="post" action="/tenders/my/confirm">
+                                    <input type="hidden" name="tender_id" value="{{ tender.Tender_ID }}">
+                                    <button type="submit" class="btn btn-primary">Bestätigen</button>
+                                </form>
+                            {% endif %}
+
+                            <!-- Transaction-Details-Button -->
+                            {% if tender.Status == 'CONFIRM_PROVIDER' %}
                                 <div class="col-6">
                                     <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#transactionModal{{ tender.Tender_ID }}">
                                         Transaktionsdetails
@@ -92,7 +104,7 @@
                         'tender': tender
                     } %}
                 {% endif %}
-                {% if tender.Status == "ACCEPTED" %}
+                {% if tender.Status == "CONFIRM_PROVIDER" %}
                     {% include 'modals/transaction_modal.twig' with {
                         TransactionHash: tender.Transaction_Hash,
                         PaidPrice: tender.Bid,

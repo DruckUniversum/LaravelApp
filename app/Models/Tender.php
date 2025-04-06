@@ -14,7 +14,7 @@ class Tender extends Model
     protected $primaryKey = 'Tender_ID';
 
     protected $fillable = [
-        'Status',
+        'Status', // Values = [OPEN, ACCEPTED, CONFIRM_USER, CONFIRM_PROVIDER, PROCESSING, SHIPPED, CLOSED]
         'Bid',
         'Infill',
         'Filament',

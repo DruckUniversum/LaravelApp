@@ -7,6 +7,7 @@ use App\Models\Tender;
 use App\Models\Order;
 use App\Services\CryptoPayment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class TenderController extends Controller
@@ -58,6 +59,10 @@ class TenderController extends Controller
             'infill'      => 'required|integer',
             'description' => 'required|string',
         ]);
+
+        if(strlen(Auth::user()->Street) == 0) {
+            return redirect('/settings')->with(["success" => "Bitte hinterlegen Sie Ihre Adressdaten und Namen."]);
+        }
 
         // Prüfen des Wallets des aktuellen Benutzers
         $wallet = Wallet::where('user_id', auth()->id())->first();
@@ -151,38 +156,6 @@ class TenderController extends Controller
         $tender->Status = 'ACCEPTED';
         $tender->Provider_ID = auth()->id();
 
-        // Wallets für Transaktion abfragen
-        $providerWallet = Wallet::where('user_id', auth()->id())->first();
-        $tendererWallet = Wallet::where('user_id', $tender->Tenderer_ID)->first();
-        if (!$providerWallet || !$tendererWallet) {
-            Log::error('Wallets nicht gefunden bei der Ausschreibungsakzeptanz.', [
-                'provider_id'  => auth()->id(),
-                'tenderer_id'  => $tender->Tenderer_ID,
-                'tender_id'    => $tender->id,
-            ]);
-            return back()->with('error', 'Wallet(s) nicht gefunden.');
-        }
-
-        // Ausführen der Transaktion
-        $txHash = CryptoPayment::make_transaction(
-            $tendererWallet->Address,
-            $providerWallet->Address,
-            $tendererWallet->Priv_Key,
-            $tendererWallet->Pub_Key,
-            env("BLOCKCYPHER_API_KEY"),
-            $tender->Bid
-        );
-        if (array_key_exists("error", $txHash) || !array_key_exists("tx_hash", $txHash)) {
-            Log::error('Transaktion bei Ausschreibungsakzeptanz fehlgeschlagen.', [
-                'user_id'    => auth()->id(),
-                'tender_id'  => $tender->id,
-                'tx_response'=> $txHash
-            ]);
-            return back()->with("error", "Fehler beim Durchführen der Transaktion.");
-        }
-
-        $tender->Transaction_Hash = $txHash["tx_hash"];
-
         if (!$tender->save()) {
             Log::error('Speichern der akzeptierten Ausschreibung fehlgeschlagen.', [
                 'user_id'   => auth()->id(),
@@ -193,11 +166,77 @@ class TenderController extends Controller
 
         Log::info('Ausschreibung erfolgreich akzeptiert und Transaktion ausgeführt.', [
             'user_id'         => auth()->id(),
-            'tender_id'       => $tender->id,
-            'transaction_hash'=> $txHash["tx_hash"]
+            'tender_id'       => $tender->id
         ]);
 
-        return redirect("/tenders")->with('success', 'Ausschreibung erfolgreich angenommen. Die Transaktion ist in Bearbeitung...');
+        return redirect("/tenders")->with('success', 'Ausschreibung erfolgreich angenommen.');
+    }
+
+    public function confirm(Request $request)
+    {
+        $request->validate([
+            'tender_id' => 'required|exists:App\Models\Tender,Tender_ID',
+        ]);
+
+        $tender = Tender::find($request->tender_id);
+
+        if($tender->Status == 'ACCEPTED') {
+            if($tender->Tenderer_ID != auth()->id()) {
+                return redirect()->back()->with('error', 'Nicht berechtigt.');
+            }
+
+            $tender->Status = 'CONFIRM_USER';
+        } else if($tender->Status == 'CONFIRM_USER') {
+            if($tender->Provider_ID != auth()->id()) {
+                return redirect()->back()->with('error', 'Nicht berechtigt.');
+            }
+
+            $tender->Status = 'CONFIRM_PROVIDER';
+
+            // Wallets für Transaktion abfragen
+            $providerWallet = Wallet::where('user_id', auth()->id())->first();
+            $tendererWallet = Wallet::where('user_id', $tender->Tenderer_ID)->first();
+            if (!$providerWallet || !$tendererWallet) {
+                Log::error('Wallets nicht gefunden bei der Ausschreibungsakzeptanz.', [
+                    'provider_id'  => auth()->id(),
+                    'tenderer_id'  => $tender->Tenderer_ID,
+                    'tender_id'    => $tender->id,
+                ]);
+                return back()->with('error', 'Wallet(s) nicht gefunden.');
+            }
+
+            // Ausführen der Transaktion
+            $txHash = CryptoPayment::make_transaction(
+                $tendererWallet->Address,
+                $providerWallet->Address,
+                $tendererWallet->Priv_Key,
+                $tendererWallet->Pub_Key,
+                env("BLOCKCYPHER_API_KEY"),
+                $tender->Bid
+            );
+            if (array_key_exists("error", $txHash) || !array_key_exists("tx_hash", $txHash)) {
+                Log::error('Transaktion bei Ausschreibungsakzeptanz fehlgeschlagen.', [
+                    'user_id'    => auth()->id(),
+                    'tender_id'  => $tender->id,
+                    'tx_response'=> $txHash
+                ]);
+                return back()->with("error", "Fehler beim Durchführen der Transaktion.");
+            }
+
+            $tender->Transaction_Hash = $txHash["tx_hash"];
+        } else {
+            return redirect()->back()->with('error', 'Ausschreibung ist bereits bearbeitet.');
+        }
+
+        if (!$tender->save()) {
+            Log::error('Speichern der akzeptierten Ausschreibung fehlgeschlagen.', [
+                'user_id'   => auth()->id(),
+                'tender_id' => $tender->id
+            ]);
+            return back()->with('error', 'Fehler beim Bearbeiten der Ausschreibung.');
+        }
+
+        return back()->with('success', 'Ausschreibung wurde erfolgreich bestätigt.');
     }
 
     /**
@@ -246,5 +285,113 @@ class TenderController extends Controller
         ]);
 
         return redirect("/tenders")->with('success', 'Ausschreibung erfolgreich als verschickt markiert.');
+    }
+
+    /**
+     * Schließt eine Ausschreibung.
+     *
+     * Diese Methode validiert die Anfrage, prüft die Berechtigung des Benutzers,
+     * setzt den Status der Ausschreibung auf "CLOSED" und speichert diese Änderung.
+     * Schreibende Aktionen, systemische Fehler und Sicherheits-Auffälligkeiten werden
+     * mithilfe des Log-Facades dokumentiert.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function close(Request $request)
+    {
+        // Validierung der Eingabe
+        $validated = $request->validate([
+            'tender_id' => 'required|exists:App\Models\Tender,Tender_ID'
+        ]);
+
+        // Ausschreibung anhand der tender_id abrufen
+        $tender = Tender::find($validated["tender_id"]);
+
+        // Berechtigungsprüfung: Nur der Tenderer darf die Ausschreibung schließen.
+        if ($tender->Tenderer_ID != auth()->id()) {
+            Log::warning('Unberechtigter Schließversuch eines Tenders.', [
+                'tender_id' => $validated["tender_id"],
+                'user_id' => auth()->id()
+            ]);
+            return redirect()->back()->with('error', 'Nicht berechtigt.');
+        }
+
+        // Status der Ausschreibung auf CLOSED setzen
+        $tender->Status = 'CLOSED';
+
+        // Versuche, den geänderten Status zu speichern
+        if (!$tender->save()) {
+            Log::error('Fehler beim Schließen der Ausschreibung. Speichern des neuen Status fehlgeschlagen.', [
+                'tender_id' => $tender->Tender_ID,
+                'user_id' => auth()->id()
+            ]);
+            return back()->with('error', 'Fehler beim Schließen der Ausschreibung.');
+        }
+
+        // Logge die erfolgreiche schreibende Aktion
+        Log::info('Tender erfolgreich geschlossen.', [
+            'tender_id' => $tender->Tender_ID,
+            'user_id' => auth()->id()
+        ]);
+
+        return redirect("/tenders/my")->with('success', 'Ausschreibung erfolgreich geschlossen.');
+    }
+
+    /**
+     * Sendet eine Nachricht im Chat einer Ausschreibung.
+     *
+     * Diese Methode validiert die Eingabe, überprüft, ob der Benutzer berechtigt
+     * ist, auf den Chat zuzugreifen (Tenderer oder Provider) und speichert die
+     * Nachricht als neuen Chat-Eintrag. Schreibende Aktionen, systemische Fehler und
+     * Sicherheits-Auffälligkeiten werden mithilfe des Log-Facades dokumentiert.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function chat(Request $request)
+    {
+        // Validierung der Eingabe
+        $validated = $request->validate([
+            'tender_id' => 'required|exists:App\Models\Tender,Tender_ID',
+            'message'   => 'required|string'
+        ]);
+
+        // Ausschreibung anhand der tender_id abrufen
+        $tender = Tender::find($validated["tender_id"]);
+
+        // Berechtigungsprüfung: Nur Tenderer oder Provider dürfen Nachrichten versenden.
+        if ($tender->Tenderer_ID != auth()->id() && $tender->Provider_ID != auth()->id()) {
+            Log::warning('Unberechtigter Chat-Zugriff auf Tender.', [
+                'tender_id' => $validated["tender_id"],
+                'user_id'   => auth()->id()
+            ]);
+            return redirect()->back()->with('error', 'Nicht berechtigt.');
+        }
+
+        // Erstelle einen neuen Chat-Eintrag und protokolliere die Aktion
+        $chat = Chat::create([
+            'Tender_ID' => $validated["tender_id"],
+            'User_ID'   => auth()->id(),
+            'Content'   => $validated["message"],
+            'Timestamp' => date("Y-m-d H:i:s")
+        ]);
+
+        // Fehlerfall: Chat-Eintrag konnte nicht erstellt werden
+        if (!$chat) {
+            Log::error('Fehler beim Senden der Nachricht. Erstellung des Chat-Eintrags fehlgeschlagen.', [
+                'tender_id' => $validated["tender_id"],
+                'user_id'   => auth()->id()
+            ]);
+            return back()->with('error', 'Fehler beim Senden der Nachricht.');
+        }
+
+        // Erfolgreicher Versand der Nachricht protokollieren
+        Log::info('Chat-Nachricht erfolgreich versendet.', [
+            'tender_id' => $validated["tender_id"],
+            'user_id'   => auth()->id()
+        ]);
+
+        return back()->with('success', 'Nachricht erfolgreich versendet.');
     }
 }

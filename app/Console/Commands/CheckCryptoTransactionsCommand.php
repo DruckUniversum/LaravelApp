@@ -73,7 +73,7 @@ class CheckCryptoTransactionsCommand extends Command
         }
 
         // Laden aller Tenders mit dem Status "ACCEPTED"
-        $tenders = Tender::where('Status', 'ACCEPTED')
+        $tenders = Tender::where('Status', 'CONFIRM_PROVIDER')
             ->whereNotNull('Transaction_Hash')
             ->get();
 

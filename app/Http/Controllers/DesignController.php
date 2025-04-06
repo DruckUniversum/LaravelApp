@@ -58,6 +58,10 @@ class DesignController extends Controller
             'license' => 'string|max:255',
         ]);
 
+        if(strlen(Auth::user()->Street) == 0) {
+            return redirect('/settings')->with(["success" => "Bitte hinterlegen Sie Ihre Adressdaten und Namen."]);
+        }
+
         $stlFile = $request->file('stl_file');
         $coverPicture = $request->file('cover_picture');
 

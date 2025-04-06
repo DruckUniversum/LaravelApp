@@ -51,29 +51,6 @@
                                 <input type="text" class="form-control" name="country" value="{{ user.Country }}" required>
                             </div>
                         </div>
-
-                        <!-- Kontakt -->
-                        <h3 class="card-title mt-4">Kontakt</h3>
-                        <div class="row g-3">
-                            <div class="col-md-12">
-                                <div class="form-label">E-Mail</div>
-                                <input type="email" class="form-control" name="email" value="{{ user.Email }}" required>
-                            </div>
-                        </div>
-
-                        <!-- Passwort -->
-                        <h3 class="card-title mt-4">Passwort ändern</h3>
-                        <p class="card-subtitle">Falls du das Passwort ändern möchtest, gib ein neues ein:</p>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="form-label">Neues Passwort</div>
-                                <input type="password" class="form-control" name="password">
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-label">Passwort bestätigen</div>
-                                <input type="password" class="form-control" name="password_confirm">
-                            </div>
-                        </div>
                     </div>
 
                     <div class="card-footer bg-transparent mt-auto">
@@ -82,6 +59,19 @@
                         </div>
                     </div>
                 </form>
+            </div>
+            <div class="col-12 d-flex flex-column">
+                <div class="card-body">
+                    <h2 class="mb-4">Rollenzuweisung</h2>
+
+                    <form method="post" action="/settings/verify/designer">
+                        <button type="submit" class="btn btn-dark">Verfikation als Designer</button>
+                    </form>
+
+                    <form method="post" action="/settings/verify/provider">
+                        <button type="submit" class="btn btn-dark">Verfikation als Druckdienstleister</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

@@ -1,0 +1,20 @@
+{% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset("css/register_styles.css") }}">
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h2>SSO</h2>
+
+        <!-- Fehlermeldung -->
+        {% if error %}
+            <div class="error-messages">
+                <ul>
+                    <li style="color: red;">{{ error }}</li>
+                </ul>
+            </div>
+        {% endif %}
+
+        <a href="/auth/redirect/google">Über Google anmelden</a>
+    </div>
+{% endblock %}

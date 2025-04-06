@@ -5,17 +5,16 @@ use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TenderController;
-use App\Http\Controllers\ChatController;
+use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\DesignController;
 use Illuminate\Support\Facades\Route;
 
 // Authentifizierung (Login/Registrierung - öffentlich)
-Route::get('auth/login', [AuthController::class, 'showLoginForm']);
-Route::post('auth/login', [AuthController::class, 'login']);
+Route::get('/auth/login', [AuthController::class, 'showSsoForm']);
 
-Route::get('auth/register', [AuthController::class, 'showRegisterForm']);
-Route::post('auth/register', [AuthController::class, 'register']);
+Route::get('/auth/redirect/google', [GoogleController::class, 'redirectToGoogle']);
+Route::get('/auth/callback/google', [GoogleController::class, 'handleGoogleCallback']);
 
 // Designs-Routen (Öffentlich zugänglich)
 Route::get('designs', [DesignController::class, 'index']);
@@ -23,7 +22,7 @@ Route::get('designs', [DesignController::class, 'index']);
 // Authentifizierte Routen (erfordern Login)
 Route::middleware(['auth'])->group(function () {
     // Benutzer abmelden
-    Route::get('auth/logout', [AuthController::class, 'logout']);
+    Route::get('auth/logout', [GoogleController::class, 'logout']);
 
     // Download Page
     Route::get('download', [DownloadController::class, 'download']);
@@ -43,6 +42,8 @@ Route::middleware(['auth'])->group(function () {
     // Benutzerprofil/Einstellungen bearbeiten
     Route::get('settings', [UserController::class, 'settings']);
     Route::post('settings/update', [UserController::class, 'settingsUpdate']);
+    Route::post('settings/verify/designer', [UserController::class, 'verifyDesigner']);
+    Route::post('settings/verify/provider', [UserController::class, 'verifyProvider']);
 
     // Wallet-Routen
     Route::get('wallet', [WalletController::class, 'index']);
@@ -52,9 +53,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('tenders', [TenderController::class, 'index']);
     Route::post('tenders/create', [TenderController::class, 'create']);
     Route::post('tenders/accept', [TenderController::class, 'accept']);
+    Route::post('tenders/confirm', [TenderController::class, 'confirm']);
     Route::post('tenders/ship', [TenderController::class, 'ship']);
 
     Route::get('tenders/my', [TenderController::class, 'indexMy']);
+    Route::post('tenders/my/confirm', [TenderController::class, 'confirm']);
     Route::post('tenders/my/close', [TenderController::class, 'close']);
 
     Route::post('tenders/chat', [TenderController::class, 'chat']);
