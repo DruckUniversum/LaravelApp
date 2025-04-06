@@ -13,8 +13,10 @@ class TwigAuthServiceProvider extends ServiceProvider {
         View::composer('*', function ($view) use ($twig) {
             $user = Auth::user();
             $roles = [];
-            foreach ($user->roles as $role) {
-                $roles[] = $role->Role;
+            if($user) {
+                foreach ($user->roles as $role) {
+                    $roles[] = $role->Role;
+                }
             }
             $twig->addGlobal('auth', [
                 'user' => $user,

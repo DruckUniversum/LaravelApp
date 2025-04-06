@@ -18,17 +18,21 @@ class PrinterController extends Controller
             'api_key' => 'required|string',
         ]);
 
-        $printer = Printer::where('api_key', Hash::make($validated['api_key']))->first();
+        $printers = Printer::all();
+        $printer = null;
+        foreach($printers as $candidate) {
+            if(Hash::check($validated["api_key"], $candidate["API_Key"])) {
+                $printer = $candidate;
+            }
+        }
         if(!$printer) {
             Log::warning('API: Authentifizierungs-Fehler (API-Key)');
             return response()->json([
-                'error' => 'Invalid API Key'
+                'error' => 'Ungültiger API Key'
             ], 401);
         }
 
-        $user = $printer->user;
-
-        $tender = Tender::where('user_id', $user->id)->where('Status', 'PAID')->first();
+        $tender = Tender::where('Provider_ID', $printer->User_ID)->where('Status', 'PAID')->first();
         if(!$tender) {
             return response()->json([
                 'message' => 'Keine Druck-Jobs verfügbar.'
@@ -47,17 +51,19 @@ class PrinterController extends Controller
             'tender_id' => 'required|exists:App\Models\Tender,Tender_ID',
         ]);
 
-        $printer = Printer::where('api_key', Hash::make($validated['api_key']))->first();
+        $printers = Printer::all();
+        $printer = null;
+        foreach($printers as $candidate) {
+            if(Hash::check($validated["api_key"], $candidate["API_Key"])) {
+                $printer = $candidate;
+            }
+        }
         if(!$printer) {
-            Log::warning('API: Authentifizierungs-Fehler (API-Key)', [
-                'tender_id' => $validated["tender_id"]
-            ]);
+            Log::warning('API: Authentifizierungs-Fehler (API-Key)');
             return response()->json([
-                'error' => 'Falscher API Key'
+                'error' => 'Ungültiger API Key'
             ], 401);
         }
-
-        $user = $printer->user;
 
         $tender = Tender::find($validated['tender_id']);
         if(!$tender) {
@@ -70,7 +76,7 @@ class PrinterController extends Controller
             ]);
         }
 
-        if($tender->Provider_ID != $user->id) {
+        if($tender->Provider_ID != $printer->User_ID) {
             Log::error('API: Sicherheitsauffälligkeit! Es wurde versucht, eine Ausschreibung von einem anderen Druckdienstleister herunterzuladen.', [
                 'printer_id' => $printer->Printer_ID,
                 'tender_id' => $validated["tender_id"]
@@ -91,17 +97,19 @@ class PrinterController extends Controller
             'message' => 'string',
         ]);
 
-        $printer = Printer::where('api_key', Hash::make($validated['api_key']))->first();
+        $printers = Printer::all();
+        $printer = null;
+        foreach($printers as $candidate) {
+            if(Hash::check($validated["api_key"], $candidate["API_Key"])) {
+                $printer = $candidate;
+            }
+        }
         if(!$printer) {
-            Log::warning('API: Authentifizierungs-Fehler (API-Key)', [
-                'tender_id' => $validated["tender_id"]
-            ]);
+            Log::warning('API: Authentifizierungs-Fehler (API-Key)');
             return response()->json([
-                'error' => 'Falscher API Key'
+                'error' => 'Ungültiger API Key'
             ], 401);
         }
-
-        $user = $printer->user;
 
         $tender = Tender::find($validated['tender_id']);
         if(!$tender) {
@@ -114,7 +122,7 @@ class PrinterController extends Controller
             ]);
         }
 
-        if($tender->Provider_ID != $user->id) {
+        if($tender->Provider_ID != $printer->User_ID) {
             Log::error('API: Sicherheitsauffälligkeit! Es wurde versucht, eine Ausschreibung von einem anderen Druckdienstleister herunterzuladen.', [
                 'printer_id' => $printer->Printer_ID,
                 'tender_id' => $validated["tender_id"]
