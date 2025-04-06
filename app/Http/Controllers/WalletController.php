@@ -10,13 +10,6 @@ use Illuminate\Support\Facades\Log;
 
 class WalletController extends Controller
 {
-    protected $cryptoPayment;
-
-    public function __construct(CryptoPayment $cryptoPayment)
-    {
-        $this->cryptoPayment = $cryptoPayment;
-    }
-
     /**
      * Zeigt das Wallet des eingeloggten Benutzers sowie das aktuelle Guthaben an.
      *
@@ -53,7 +46,7 @@ class WalletController extends Controller
     public function sendTransaction(Request $request)
     {
         $request->validate([
-            'amount'  => 'required|numeric|min:0.01',
+            'amount'  => 'required|numeric|min:1',
             'address' => 'required|string',
         ]);
 
@@ -74,7 +67,8 @@ class WalletController extends Controller
         }
 
         // Prüfe, ob das Wallet über ausreichendes Guthaben verfügt
-        if ($wallet->balance < $request->amount) {
+        $balance = CryptoPayment::get_balance($wallet->Address, env("BLOCKCYPHER_API_KEY"));
+        if ($balance < $request->amount) {
             Log::warning('Transaktionsversuch fehlgeschlagen aufgrund unzureichenden Guthabens.', [
                 'user_id'   => auth()->id(),
                 'wallet_balance' => $wallet->balance,
@@ -84,13 +78,13 @@ class WalletController extends Controller
         }
 
         // Führe die Transaktion aus
-        $success = $this->cryptoPayment->make_transaction(
+        $success = CryptoPayment::make_transaction(
             $wallet->Address,
             $request->address,
             $wallet->Priv_Key,
             $wallet->Pub_Key,
-            $request->amount,
-            env('BLOCKCYPHER_API_KEY')
+            env('BLOCKCYPHER_API_KEY'),
+            $request->amount
         );
 
         if ($success) {
@@ -100,7 +94,7 @@ class WalletController extends Controller
                 'from_wallet'     => $wallet->address,
                 'to_wallet'       => $request->address,
             ]);
-            return redirect()->back()->with('success', 'Transaktion erfolgreich.');
+            return redirect("/wallet")->with('success', 'Transaktion erfolgreich.');
         } else {
             Log::error('Transaktion fehlgeschlagen.', [
                 'user_id'         => auth()->id(),

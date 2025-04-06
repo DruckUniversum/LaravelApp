@@ -1,12 +1,11 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests;
 
 use App\Models\User;
 use App\Models\Wallet;
 use App\Services\CryptoPayment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class CryptoTest extends TestCase
 {

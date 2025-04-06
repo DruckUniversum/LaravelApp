@@ -60,7 +60,15 @@ class TenderController extends Controller
             'description' => 'required|string',
         ]);
 
-        if(strlen(Auth::user()->Street) == 0) {
+        if(
+            strlen(Auth::user()->Street) == 0 ||
+            strlen(Auth::user()->House_Number) == 0 ||
+            strlen(Auth::user()->City) == 0 ||
+            strlen(Auth::user()->Postal_Code) == 0 ||
+            (
+                strlen(Auth::user()->First_Name) +
+                strlen(Auth::user()->Last_Name)
+            ) == 0) {
             return redirect('/settings')->with(["success" => "Bitte hinterlegen Sie Ihre Adressdaten und Namen."]);
         }
 

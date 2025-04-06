@@ -26,7 +26,6 @@ class User extends Model implements Authenticatable
         'google_id',
         'Remember_Token'
     ];
-    protected $hidden = ['Password_Hash'];
     public $timestamps = false;
 
     public function roles(): \Illuminate\Database\Eloquent\Relations\HasMany

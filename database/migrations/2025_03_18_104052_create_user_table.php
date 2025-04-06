@@ -18,10 +18,8 @@ return new class extends Migration
             $table->string('City', 50)->nullable();
             $table->string('Postal_Code', 10)->nullable();
             $table->string('Email', 100)->unique();
-            $table->string('Password_Hash', 255)->nullable();
-            $table->boolean('AGB_Akzeptiert')->nullable();
-            $table->date('Last_Login')->nullable();
-            $table->unsignedInteger('Failed_Logins')->nullable();
+            $table->string('google_id', 255)->nullable();
+            $table->string('Remember_Token', 255)->nullable();
         });
     }
 

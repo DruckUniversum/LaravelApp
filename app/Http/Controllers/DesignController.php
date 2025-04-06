@@ -58,8 +58,8 @@ class DesignController extends Controller
             'license' => 'string|max:255',
         ]);
 
-        if(strlen(Auth::user()->Street) == 0) {
-            return redirect('/settings')->with(["success" => "Bitte hinterlegen Sie Ihre Adressdaten und Namen."]);
+        if(strlen(Auth::user()->First_Name) + strlen(Auth::user()->Last_Name) == 0) {
+            return redirect('/settings')->with(["success" => "Bitte hinterlegen Sie Ihren Namen."]);
         }
 
         $stlFile = $request->file('stl_file');
