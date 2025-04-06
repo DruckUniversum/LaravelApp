@@ -105,7 +105,7 @@ class TenderController extends Controller
 
         Log::info('Ausschreibung erfolgreich erstellt.', [
             'user_id'  => auth()->id(),
-            'tender_id'=> $tender->id,
+            'tender_id'=> $tender->Tender_ID,
             'bid'      => $validated["bid"]
         ]);
 
@@ -146,7 +146,7 @@ class TenderController extends Controller
         if ($tender->Status !== 'OPEN') {
             Log::info('Akzeptanzversuch für bereits bearbeitete Ausschreibung.', [
                 'user_id'   => auth()->id(),
-                'tender_id' => $tender->id,
+                'tender_id' => $tender->Tender_ID,
                 'current_status' => $tender->Status
             ]);
             return redirect()->back()->with('error', 'Ausschreibung ist bereits bearbeitet.');
@@ -159,14 +159,14 @@ class TenderController extends Controller
         if (!$tender->save()) {
             Log::error('Speichern der akzeptierten Ausschreibung fehlgeschlagen.', [
                 'user_id'   => auth()->id(),
-                'tender_id' => $tender->id
+                'tender_id' => $tender->Tender_ID
             ]);
             return back()->with('error', 'Fehler beim Bearbeiten der Ausschreibung.');
         }
 
         Log::info('Ausschreibung erfolgreich akzeptiert und Transaktion ausgeführt.', [
             'user_id'         => auth()->id(),
-            'tender_id'       => $tender->id
+            'tender_id'       => $tender->Tender_ID
         ]);
 
         return redirect("/tenders")->with('success', 'Ausschreibung erfolgreich angenommen.');
@@ -200,7 +200,7 @@ class TenderController extends Controller
                 Log::error('Wallets nicht gefunden bei der Ausschreibungsakzeptanz.', [
                     'provider_id'  => auth()->id(),
                     'tenderer_id'  => $tender->Tenderer_ID,
-                    'tender_id'    => $tender->id,
+                    'tender_id'    => $tender->Tender_ID,
                 ]);
                 return back()->with('error', 'Wallet(s) nicht gefunden.');
             }
@@ -217,7 +217,7 @@ class TenderController extends Controller
             if (array_key_exists("error", $txHash) || !array_key_exists("tx_hash", $txHash)) {
                 Log::error('Transaktion bei Ausschreibungsakzeptanz fehlgeschlagen.', [
                     'user_id'    => auth()->id(),
-                    'tender_id'  => $tender->id,
+                    'tender_id'  => $tender->Tender_ID,
                     'tx_response'=> $txHash
                 ]);
                 return back()->with("error", "Fehler beim Durchführen der Transaktion.");
@@ -231,7 +231,7 @@ class TenderController extends Controller
         if (!$tender->save()) {
             Log::error('Speichern der akzeptierten Ausschreibung fehlgeschlagen.', [
                 'user_id'   => auth()->id(),
-                'tender_id' => $tender->id
+                'tender_id' => $tender->Tender_ID
             ]);
             return back()->with('error', 'Fehler beim Bearbeiten der Ausschreibung.');
         }
@@ -271,14 +271,14 @@ class TenderController extends Controller
 
         if (!$tender->save()) {
             Log::error('Fehler beim Aktualisieren der Versandinformationen einer Ausschreibung.', [
-                'tender_id' => $tender->id,
+                'tender_id' => $tender->Tender_ID,
                 'user_id'   => auth()->id()
             ]);
             return back()->with('error', 'Fehler beim Aktualisieren der Versandinformationen.');
         }
 
         Log::info('Ausschreibung erfolgreich als verschickt markiert.', [
-            'tender_id'         => $tender->id,
+            'tender_id'         => $tender->Tender_ID,
             'user_id'           => auth()->id(),
             'shipping_number'   => $validated['shipping_number'],
             'shipping_provider' => $validated['shipping_provider']

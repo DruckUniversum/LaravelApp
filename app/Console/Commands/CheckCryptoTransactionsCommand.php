@@ -42,7 +42,7 @@ class CheckCryptoTransactionsCommand extends Command
             $txHash = $order->Transaction_Hash; // Abrufen des Transaktions-Hashes (z. B. einer Blockchain-Zahlung)
             if (!$txHash) {
                 Log::warning('Überspringe Bestellung ohne Transaktions-Hash.', [
-                    'order_id' => $order->id
+                    'order_id' => $order->Order_ID
                 ]);
                 continue;
             }
@@ -50,7 +50,7 @@ class CheckCryptoTransactionsCommand extends Command
             // Überprüfung der Transaktion auf Blockchain-Confirmations
             $confirmations = intval(CryptoPayment::check_confirmations($txHash));
             Log::info('Transaktionsüberprüfung für Bestellung.', [
-                'order_id' => $order->id,
+                'order_id' => $order->Order_ID,
                 'tx_hash'  => $txHash,
                 'confirmations' => $confirmations,
             ]);
@@ -60,12 +60,12 @@ class CheckCryptoTransactionsCommand extends Command
                 $order->Payment_Status = "PAID"; // Zahlungsstatus der Bestellung auf "BEZAHLT" setzen
                 if ($order->save()) {
                     Log::info('Zahlungsstatus der Bestellung auf PAID gesetzt.', [
-                        'order_id' => $order->id,
+                        'order_id' => $order->Order_ID,
                         'tx_hash'  => $txHash
                     ]);
                 } else {
                     Log::error('Fehler beim Speichern des aktualisierten Zahlungsstatus der Bestellung.', [
-                        'order_id' => $order->id,
+                        'order_id' => $order->Order_ID,
                         'tx_hash'  => $txHash
                     ]);
                 }
@@ -83,14 +83,14 @@ class CheckCryptoTransactionsCommand extends Command
             $txHash = $tender->Transaction_Hash;
             if (!$txHash) {
                 Log::warning('Überspringe Tender ohne Transaktions-Hash.', [
-                    'tender_id' => $tender->id
+                    'tender_id' => $tender->Tender_ID
                 ]);
                 continue;
             }
 
             $confirmations = CryptoPayment::check_confirmations($txHash);
             Log::info('Transaktionsüberprüfung für Tender.', [
-                'tender_id'   => $tender->id,
+                'tender_id'   => $tender->Tender_ID,
                 'tx_hash'     => $txHash,
                 'confirmations' => $confirmations,
             ]);
@@ -100,12 +100,12 @@ class CheckCryptoTransactionsCommand extends Command
                 $tender->Status = "PAID"; // Status der Ausschreibung auf "BEZAHLT" setzen
                 if ($tender->save()) {
                     Log::info('Status der Ausschreibung auf PAID gesetzt.', [
-                        'tender_id' => $tender->id,
+                        'tender_id' => $tender->Tender_ID,
                         'tx_hash'   => $txHash
                     ]);
                 } else {
                     Log::error('Fehler beim Speichern des aktualisierten Status der Ausschreibung.', [
-                        'tender_id' => $tender->id,
+                        'tender_id' => $tender->Tender_ID,
                         'tx_hash'   => $txHash
                     ]);
                 }

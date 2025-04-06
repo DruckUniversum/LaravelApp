@@ -32,19 +32,19 @@ class GoogleController extends Controller
         );
 
         Log::info('Login über Google SSO.', [
-            'user_id' => $user->id,
+            'user_id' => $user->User_ID,
             'Email' => $googleUser->getEmail(),
             'google_id' => $googleUser->getId()]
         );
 
-        $wallets = Wallet::where("User_ID", $user->id)->get();
+        $wallets = Wallet::where("User_ID", $user->User_ID)->get();
         if(count($wallets) == 0) {
-            Log::info('Neuer Benutzer registriert.', ['user_id' => $user->id, 'email' => $user->Email]);
+            Log::info('Neuer Benutzer registriert.', ['user_id' => $user->User_ID, 'email' => $user->Email]);
 
             // Wallet für den neuen Benutzer erstellen
             $wallet = CryptoPayment::generate_wallet(env('BLOCKCYPHER_API_KEY'));
             if (empty($wallet) || !isset($wallet['private'], $wallet['public'], $wallet['address'])) {
-                Log::error('Fehler beim Erstellen des Wallets.', ['user_id' => $user->id]);
+                Log::error('Fehler beim Erstellen des Wallets.', ['user_id' => $user->User_ID]);
             }
 
             $coinSymbol = 'bcy';
@@ -60,7 +60,7 @@ class GoogleController extends Controller
                 'User_ID' => $user->User_ID,
             ]);
 
-            Log::info('Wallet für den neuen Benutzer erstellt.', ['user_id' => $user->id, 'wallet_address' => $address]);
+            Log::info('Wallet für den neuen Benutzer erstellt.', ['user_id' => $user->User_ID, 'wallet_address' => $address]);
         }
 
         Auth::login($user);

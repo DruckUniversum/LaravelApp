@@ -41,14 +41,14 @@ class DownloadController extends Controller
             }
             if ($order->User_ID != auth()->id()) {
                 Log::error('Sicherheitsrelevant: Unautorisierter Download-Versuch (Bestellung)', [
-                    'order_id' => $order->id,
+                    'order_id' => $order->Order_ID,
                     'user_id'  => auth()->id()
                 ]);
                 return App::abort(403);
             }
 
             Log::info('Download initiiert (Bestellung)', [
-                'order_id' => $order->id,
+                'order_id' => $order->Order_ID,
                 'user_id'  => auth()->id()
             ]);
             return Storage::download("stl/{$order->design->STL_File}.stl", "{$order->design->Name}.stl");
@@ -65,7 +65,7 @@ class DownloadController extends Controller
             }
             if ($tender->Provider_ID != auth()->id()) {
                 Log::error('Sicherheitsrelevant: Unautorisierter Download-Versuch (Ausschreibung)', [
-                    'tender_id' => $tender->id,
+                    'tender_id' => $tender->Tender_ID,
                     'user_id'   => auth()->id()
                 ]);
                 return App::abort(403);
@@ -75,14 +75,14 @@ class DownloadController extends Controller
             $tender->Status = "PROCESSING";
             if (!$tender->save()) {
                 Log::error('Systemfehler: Aktualisierung des Ausschreibungsstatus fehlgeschlagen', [
-                    'tender_id' => $tender->id,
+                    'tender_id' => $tender->Tender_ID,
                     'user_id'   => auth()->id()
                 ]);
                 return App::abort(500);
             }
 
             Log::info('Ausschreibungsstatus erfolgreich auf PROCESSING gesetzt', [
-                'tender_id' => $tender->id,
+                'tender_id' => $tender->Tender_ID,
                 'user_id'   => auth()->id()
             ]);
 
