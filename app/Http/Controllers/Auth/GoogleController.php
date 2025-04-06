@@ -51,7 +51,7 @@ class GoogleController extends Controller
             $coinSymbol = 'bcy';
             $address = $wallet['address'];
 
-            CryptoPayment::add_bcy($address, 10000000, env('BLOCKCYPHER_API_KEY'));
+            $cryptoPayment->add_bcy($address, 10000000, env('BLOCKCYPHER_API_KEY'));
 
             Wallet::create([
                 'Address' => $address,
