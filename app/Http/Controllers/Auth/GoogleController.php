@@ -42,7 +42,8 @@ class GoogleController extends Controller
             Log::info('Neuer Benutzer registriert.', ['user_id' => $user->User_ID, 'email' => $user->Email]);
 
             // Wallet für den neuen Benutzer erstellen
-            $wallet = CryptoPayment::generate_wallet(env('BLOCKCYPHER_API_KEY'));
+            $cryptoPayment = new CryptoPayment();
+            $wallet = $cryptoPayment->generate_wallet(env('BLOCKCYPHER_API_KEY'));
             if (empty($wallet) || !isset($wallet['private'], $wallet['public'], $wallet['address'])) {
                 Log::error('Fehler beim Erstellen des Wallets.', ['user_id' => $user->User_ID]);
             }
