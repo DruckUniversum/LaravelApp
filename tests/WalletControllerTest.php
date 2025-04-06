@@ -36,12 +36,15 @@ class WalletControllerTest extends TestCase
         ]);
 
         // Setze ein Mock für CryptoPayment, das den Balance-Check simuliert.
-        $cryptoPaymentMock = Mockery::mock('alias:' . CryptoPayment::class);
+        $cryptoPaymentMock = Mockery::mock(CryptoPayment::class);
         $cryptoPaymentMock->shouldReceive('get_balance')
             ->once()
             ->with("dummy_address", Mockery::any())
             ->andReturn(100.0);
 
+        $this->app->instance(CryptoPayment::class, $cryptoPaymentMock);
+
+        // Angenommen, dass die POST-Route "/orders/create" die Bestellung verarbeitet
         // Rufe die Wallet-Übersicht auf.
         $response = $this->get('/wallet');
         $response->assertStatus(200);
@@ -73,7 +76,7 @@ class WalletControllerTest extends TestCase
         $withdrawAmount = 75.00;
 
         // Simulation einer korrekten Balance und einer korrekten Transaktion
-        $cryptoPaymentMock = Mockery::mock('alias:' . CryptoPayment::class);
+        $cryptoPaymentMock = Mockery::mock(CryptoPayment::class);
         $cryptoPaymentMock->shouldReceive('get_balance')
             ->once()
             ->with("dummy_address", Mockery::any())
@@ -84,6 +87,9 @@ class WalletControllerTest extends TestCase
             ->with("dummy_address", "dummy_destination_address", "dummy_private_key", "dummy_public_key", Mockery::any(), $withdrawAmount)
             ->andReturn(['tx_hash' => 'dummy_tx_hash']);
 
+        $this->app->instance(CryptoPayment::class, $cryptoPaymentMock);
+
+        // Angenommen, dass die POST-Route "/orders/create" die Bestellung verarbeitet
         $response = $this->post('/wallet/send', ['amount' => $withdrawAmount, 'address' => 'dummy_destination_address']);
 
         $response->assertRedirect('/wallet');
@@ -117,16 +123,19 @@ class WalletControllerTest extends TestCase
         // Versuche, einen Betrag abzuheben, der das vorhandene Guthaben übersteigt.
         $withdrawAmount = 100.00;
 
-        $cryptoPaymentMock = Mockery::mock('alias:' . CryptoPayment::class);
+        $cryptoPaymentMock = Mockery::mock(CryptoPayment::class);
         $cryptoPaymentMock->shouldReceive('get_balance')
             ->once()
             ->with("dummy_address", Mockery::any())
             ->andReturn(50.0);
 
-        $response = $this->post('/wallet/withdraw', ['amount' => $withdrawAmount]);
+        $this->app->instance(CryptoPayment::class, $cryptoPaymentMock);
+
+        // Angenommen, dass die POST-Route "/orders/create" die Bestellung verarbeitet
+        $response = $this->post('/wallet/send', ['amount' => $withdrawAmount, "address" => "dummy_destination_address"]);
 
         $response->assertStatus(302);
-        $response->assertSessionHas('error', 'Nicht genügend Guthaben für die Auszahlung.');
+        $response->assertSessionHas('error', 'Nicht genügend Guthaben.');
     }
 
     protected function tearDown(): void

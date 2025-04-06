@@ -29,6 +29,7 @@ class CheckCryptoTransactionsCommand extends Command
      */
     public function handle()
     {
+        $cryptoPayment = new CryptoPayment();
         Log::info('Start der Überprüfung von Krypto-Transaktionen.', ['command' => $this->signature]);
 
         // Laden aller Bestellungen mit dem Status "OPEN"
@@ -48,7 +49,7 @@ class CheckCryptoTransactionsCommand extends Command
             }
 
             // Überprüfung der Transaktion auf Blockchain-Confirmations
-            $confirmations = intval(CryptoPayment::check_confirmations($txHash));
+            $confirmations = intval($cryptoPayment->check_confirmations($txHash));
             Log::info('Transaktionsüberprüfung für Bestellung.', [
                 'order_id' => $order->Order_ID,
                 'tx_hash'  => $txHash,
@@ -88,7 +89,7 @@ class CheckCryptoTransactionsCommand extends Command
                 continue;
             }
 
-            $confirmations = CryptoPayment::check_confirmations($txHash);
+            $confirmations = $cryptoPayment->check_confirmations($txHash);
             Log::info('Transaktionsüberprüfung für Tender.', [
                 'tender_id'   => $tender->Tender_ID,
                 'tx_hash'     => $txHash,

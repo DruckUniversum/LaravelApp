@@ -146,9 +146,12 @@ class TenderControllerTest extends TestCase
         ]);
 
         // CryptoPayment::get_balance wird so gemockt, dass ein zu niedriges Guthaben zurückgegeben wird.
-        $cryptoPaymentMock = Mockery::mock('alias:' . CryptoPayment::class);
+        $cryptoPaymentMock = Mockery::mock(CryptoPayment::class);
         $cryptoPaymentMock->shouldReceive('get_balance')->andReturn(30.0);
 
+        $this->app->instance(CryptoPayment::class, $cryptoPaymentMock);
+
+        // Angenommen, dass die POST-Route "/orders/create" die Bestellung verarbeitet
         // POST-Daten für die Tender-Erstellung, analog zu den notwendigen Feldern
         $postData = [
             'order_id'          => $order->Order_ID,
@@ -234,9 +237,12 @@ class TenderControllerTest extends TestCase
         ]);
 
         // CryptoPayment-Service so mocken, dass ausreichend Guthaben vorhanden ist und die Transaktion gelingt
-        $cryptoPaymentMock = Mockery::mock('alias:' . CryptoPayment::class);
+        $cryptoPaymentMock = Mockery::mock(CryptoPayment::class);
         $cryptoPaymentMock->shouldReceive('get_balance')->andReturn(200.0);
 
+        $this->app->instance(CryptoPayment::class, $cryptoPaymentMock);
+
+        // Angenommen, dass die POST-Route "/orders/create" die Bestellung verarbeitet
         // POST-Daten für die erfolgreiche Tender-Erstellung
         $postData = [
             'order_id'          => $order->Order_ID,

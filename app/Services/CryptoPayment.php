@@ -13,7 +13,7 @@ class CryptoPayment
      * @param string $apiKey Der API-Schlüssel für den Zugriff auf die Blockcypher-API.
      * @return array Gibt ein Array mit den generierten Wallet-Daten zurück (private_key, public_key, address und wif).
      */
-    public static function generate_wallet(string $apiKey): array
+    public function generate_wallet(string $apiKey): array
     {
         $url = "https://api.blockcypher.com/v1/bcy/test/addrs?token=" . $apiKey;
         // Initialisierung der cURL-Sitzung
@@ -51,7 +51,7 @@ class CryptoPayment
      * @param string $apiKey Der API-Schlüssel für den Zugriff auf die Blockcypher-API.
      * @return array Gibt ein Array mit den generierten Wallet-Daten zurück (private_key, public_key, address und wif).
      */
-    public static function add_bcy(string $address, int $amount, string $apiKey): array
+    public function add_bcy(string $address, int $amount, string $apiKey): array
     {
         $url = "https://api.blockcypher.com/v1/bcy/test/faucet?token=" . $apiKey;
         $body = [
@@ -101,7 +101,7 @@ class CryptoPayment
      *
      * @return array Ergebnis der Transaktion oder Fehler
      */
-    public static function make_transaction(
+    public function make_transaction(
         string $senderAddress,
         string $receiverAddress,
         string $privateKey,
@@ -161,7 +161,7 @@ class CryptoPayment
      *              andernfalls `false`, wenn entweder die Transaktion nicht gefunden wird oder
      *              nach 5 Minuten keine Bestätigungen vorliegen.
      */
-    public static function check_confirmations(string $tx_hash): bool
+    public function check_confirmations(string $tx_hash): bool
     {
         $url = "https://api.blockcypher.com/v1/bcy/test/txs/$tx_hash";
         $response = file_get_contents($url);
@@ -184,7 +184,7 @@ class CryptoPayment
      * @param string $apiKey Der API-Schlüssel für den Zugriff auf die BlockCypher-API.
      * @return int Gibt nur den Wert des Guthabens (balance) zurück oder 0 bei Fehlern.
      */
-    public static function get_balance(string $address, string $apiKey): int {
+    public function get_balance(string $address, string $apiKey): int {
         $url = "https://api.blockcypher.com/v1/bcy/test/addrs/$address/balance?token=$apiKey";
         // API-Anfrage durchführen
         $response = file_get_contents($url);

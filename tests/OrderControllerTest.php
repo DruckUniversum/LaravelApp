@@ -105,8 +105,10 @@ class OrderControllerTest extends TestCase
         ]);
 
         // CryptoPayment::get_balance wird so gemockt, dass ein zu niedriges Guthaben zurückgegeben wird.
-        $cryptoPaymentMock = Mockery::mock('alias:' . CryptoPayment::class);
+        $cryptoPaymentMock = Mockery::mock(CryptoPayment::class);
         $cryptoPaymentMock->shouldReceive('get_balance')->andReturn(50.0);
+
+        $this->app->instance(CryptoPayment::class, $cryptoPaymentMock);
 
         // Angenommen, dass die POST-Route "/orders/create" die Bestellung verarbeitet
         $response = $this->post('/orders/create', [
@@ -163,11 +165,14 @@ class OrderControllerTest extends TestCase
         ]);
 
         // CryptoPayment-Service so mocken, dass ausreichend Guthaben vorhanden ist und die Transaktion gelingt
-        $cryptoPaymentMock = Mockery::mock('alias:' . CryptoPayment::class);
+        $cryptoPaymentMock = Mockery::mock(CryptoPayment::class);
         $cryptoPaymentMock->shouldReceive('get_balance')->andReturn(150.0);
         $cryptoPaymentMock->shouldReceive('make_transaction')
             ->andReturn(['tx_hash' => 'dummy_tx_hash']);
 
+        $this->app->instance(CryptoPayment::class, $cryptoPaymentMock);
+
+        // Angenommen, dass die POST-Route "/orders/create" die Bestellung verarbeitet
         // Bestellung erstellen
         $response = $this->post('/orders/create', [
             'design_id' => $design->Design_ID,

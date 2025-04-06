@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\Log;
 
 class WalletController extends Controller
 {
+    protected $cryptoPayment;
+
+    public function __construct(CryptoPayment $cryptoPayment) {
+        $this->cryptoPayment = $cryptoPayment;
+    }
+
     /**
      * Zeigt das Wallet des eingeloggten Benutzers sowie das aktuelle Guthaben an.
      *
@@ -67,7 +73,7 @@ class WalletController extends Controller
         }
 
         // Prüfe, ob das Wallet über ausreichendes Guthaben verfügt
-        $balance = CryptoPayment::get_balance($wallet->Address, env("BLOCKCYPHER_API_KEY"));
+        $balance = $this->cryptoPayment->get_balance($wallet->Address, env("BLOCKCYPHER_API_KEY"));
         if ($balance < $request->amount) {
             Log::warning('Transaktionsversuch fehlgeschlagen aufgrund unzureichenden Guthabens.', [
                 'user_id'   => auth()->id(),
@@ -78,7 +84,7 @@ class WalletController extends Controller
         }
 
         // Führe die Transaktion aus
-        $success = CryptoPayment::make_transaction(
+        $success = $this->cryptoPayment->make_transaction(
             $wallet->Address,
             $request->address,
             $wallet->Priv_Key,
@@ -115,7 +121,7 @@ class WalletController extends Controller
     private function getBalance($address)
     {
         try {
-            $balance = CryptoPayment::get_balance($address, env('BLOCKCYPHER_API_KEY'));
+            $balance = $this->cryptoPayment->get_balance($address, env('BLOCKCYPHER_API_KEY'));
             Log::info('Guthaben erfolgreich abgerufen.', [
                 'address' => $address,
                 'balance' => $balance

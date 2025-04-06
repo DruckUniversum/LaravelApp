@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
+    protected $cryptoPayment;
+
+    public function __construct(CryptoPayment $cryptoPayment) {
+        $this->cryptoPayment = $cryptoPayment;
+    }
+
     /**
      * Zeigt alle Bestellungen des aktuellen Benutzers an.
      */
@@ -46,7 +52,7 @@ class OrderController extends Controller
         }
 
         // Abfrage des aktuellen Guthabens
-        $balance = CryptoPayment::get_balance($wallet->Address, env('BLOCKCYPHER_API_KEY'));
+        $balance = $this->cryptoPayment->get_balance($wallet->Address, env('BLOCKCYPHER_API_KEY'));
         if ($balance < $design->Price) {
             Log::info('Schreibende Aktion: Unzureichendes Guthaben im Wallet', [
                 'user_id'  => auth()->id(),
@@ -66,7 +72,7 @@ class OrderController extends Controller
         }
 
         // Versuch, die Transaktion durchzuführen
-        $txHash = CryptoPayment::make_transaction(
+        $txHash = $this->cryptoPayment->make_transaction(
             $wallet->Address,
             $designerWallet->Address,
             $wallet->Priv_Key,

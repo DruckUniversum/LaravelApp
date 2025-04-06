@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 use App\Models\Chat;
 use App\Models\Wallet;
 use App\Models\Tender;
-use App\Models\Order;
 use App\Services\CryptoPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +11,13 @@ use Illuminate\Support\Facades\Log;
 
 class TenderController extends Controller
 {
+    protected $cryptoPayment;
+
+    public function __construct(CryptoPayment $cryptoPayment) {
+        $this->cryptoPayment = $cryptoPayment;
+    }
+
+
     /**
      * Zeigt alle öffentlichen Ausschreibungen sowie die vom Benutzer angenommenen Ausschreibungen an.
      */
@@ -82,7 +88,7 @@ class TenderController extends Controller
         }
 
         // Guthabenabfrage
-        $balance = CryptoPayment::get_balance($wallet->Address, env('BLOCKCYPHER_API_KEY'));
+        $balance = $this->cryptoPayment->get_balance($wallet->Address, env('BLOCKCYPHER_API_KEY'));
         if ($balance < floatval($validated["bid"])) {
             Log::info('Unzureichendes Guthaben für Ausschreibung.', [
                 'user_id'      => auth()->id(),
@@ -214,7 +220,7 @@ class TenderController extends Controller
             }
 
             // Ausführen der Transaktion
-            $txHash = CryptoPayment::make_transaction(
+            $txHash = $this->cryptoPayment->make_transaction(
                 $tendererWallet->Address,
                 $providerWallet->Address,
                 $tendererWallet->Priv_Key,

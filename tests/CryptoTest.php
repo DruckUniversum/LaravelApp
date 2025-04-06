@@ -33,7 +33,8 @@ class CryptoTest extends TestCase
 
         // 2. Wallet für den Nutzer erstellen
         // Erzeuge Wallet-Daten mittels des CryptoPayment-Services
-        $walletData = CryptoPayment::generate_wallet(env('BLOCKCYPHER_API_KEY'));
+        $cryptoPayment = new CryptoPayment();
+        $walletData = $cryptoPayment->generate_wallet(env('BLOCKCYPHER_API_KEY'));
         $this->assertNotNull($walletData, "Das Wallet wurde nicht korrekt erstellt!");
 
         // Wallet in der Datenbank anlegen (Achtung: Felder exakt beachten)
@@ -52,7 +53,7 @@ class CryptoTest extends TestCase
         $this->assertNotNull($fetchedWallet, "Das Wallet wurde nicht korrekt gefunden!");
 
         // Guthaben hinzufügen und abfragen mit Wiederholungsversuchen (Polling)
-        CryptoPayment::add_bcy($wallet->Address, 10000000, env('BLOCKCYPHER_API_KEY'));
+        $cryptoPayment->add_bcy($wallet->Address, 10000000, env('BLOCKCYPHER_API_KEY'));
         $balance = 0;
         $maxWaitTime = 60; // Sekunden
         $waitedTime = 0;
@@ -60,7 +61,7 @@ class CryptoTest extends TestCase
 
         while ($balance <= 0 && $waitedTime < $maxWaitTime) {
             sleep($interval);
-            $balance = CryptoPayment::get_balance($wallet->Address, env('BLOCKCYPHER_API_KEY'));
+            $balance = $cryptoPayment->get_balance($wallet->Address, env('BLOCKCYPHER_API_KEY'));
             $waitedTime += $interval;
             echo "Warte, bis Guthaben im Wallet eingegangen ist...\n";
         }
@@ -68,7 +69,7 @@ class CryptoTest extends TestCase
         $this->assertGreaterThan(0, $balance, "Nach {$maxWaitTime} Sekunden wurde kein Guthaben dem Wallet gutgeschrieben!");
 
         // 4. Transaktion vom Wallet zu sich selbst durchführen
-        $txHash = CryptoPayment::make_transaction(
+        $txHash = $cryptoPayment->make_transaction(
             $wallet->Address,
             $wallet->Address,
             $wallet->Priv_Key,
